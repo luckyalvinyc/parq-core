@@ -19,7 +19,8 @@
   },
   "devDependencies": {
     "jest": "^27.4.3",
-    "ley": "^0.7.1"
+    "ley": "^0.7.1",
+    "pgtools": "^0.3.2"
   },
   "jest": {
     "verbose": true
