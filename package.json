@@ -1,0 +1,27 @@
+{
+  "name": "parq-core",
+  "version": "1.0.0",
+  "description": "Park anywhere you want. Your vehicle, our responsibility",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "db:init": "npm run db:create && npm run db:migrate",
+    "db:create": "node scripts/create-db.js",
+    "db:migrate": "ley up"
+  },
+  "author": "Lucky Alvin Y. Casipe <luckyalvinyc@gmail.com>",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "polka": "^1.0.0-next.22",
+    "postgres": "^1.0.2"
+  },
+  "devDependencies": {
+    "jest": "^27.4.3",
+    "ley": "^0.7.1"
+  },
+  "jest": {
+    "verbose": true
+  }
+}
