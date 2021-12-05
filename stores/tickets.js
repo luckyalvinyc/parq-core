@@ -11,12 +11,12 @@ import { execute } from './utils.js'
  */
 
 export async function create (slotId, rate, options = {}) {
+  const sql = execute(options.txn)
+
   const rowToBeInserted = {
     slot_id: slotId,
     rate
   }
-
-  const sql = execute(options.txn)
 
   const rows = await sql`
     INSERT INTO tickets ${sql(rowToBeInserted, 'slot_id', 'rate')}
