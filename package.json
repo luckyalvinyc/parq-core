@@ -5,7 +5,7 @@
   "main": "app.js",
   "type": "module",
   "scripts": {
-    "test:backend": "NODE_OPTIONS=--experimental-vm-modules jest --config backend/jest.config.js",
+    "test:backend": "NODE_OPTIONS=--experimental-vm-modules jest -c backend/jest.config.js",
     "db:init": "npm run db:create && npm run db:migrate",
     "db:create": "node backend/scripts/cli.js create",
     "db:migrate": "ley up --cwd=backend"
