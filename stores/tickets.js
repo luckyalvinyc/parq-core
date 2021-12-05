@@ -18,18 +18,15 @@ export async function create (slotId, rate, options = {}) {
     rate
   }
 
-  const rows = await sql`
-    INSERT INTO tickets ${sql(rowToBeInserted, 'slot_id', 'rate')}
+  const [ ticket ] = await sql`
+    INSERT INTO
+      tickets ${sql(rowToBeInserted, 'slot_id', 'rate')}
+    RETURNING
+      id,
+      slot_id AS "slotId",
+      rate,
+      started_at AS "startedAt"
   `
 
-  return toTicket(rows[0])
-}
-
-function toTicket (row) {
-  return {
-    id: row.id,
-    slotId: row.slot_id,
-    rate: row.rate,
-    startedAt: row.started_at
-  }
+  return ticket
 }

@@ -6,7 +6,7 @@ export const TYPES = {
   large: 2
 }
 
-export const tableName = 'slots'
+export const TABLE_NAME = 'slots'
 
 /**
  * Creates the provided slots, all slots will be available until occupied
@@ -30,7 +30,7 @@ export async function bulkCreate (rawSlots) {
 
   return sql`
     INSERT INTO
-      ${sql(tableName)} ${sql(rowsToBeInserted, 'type', 'distance')}
+      ${sql(TABLE_NAME)} ${sql(rowsToBeInserted, 'type', 'distance')}
     RETURNING
       id,
       type,
@@ -60,7 +60,7 @@ export async function listForVehicleType (type) {
     SELECT
       ${sql(columns)}
     FROM
-      ${sql(tableName)}
+      ${sql(TABLE_NAME)}
     WHERE
       type >= ${type} AND
       available = true
@@ -112,7 +112,7 @@ async function updateAvailability (slotId, available, txn) {
 
   return sql`
     UPDATE
-      ${sql(tableName)}
+      ${sql(TABLE_NAME)}
     SET
       available = ${available},
       updated_at = CURRENT_TIMESTAMP

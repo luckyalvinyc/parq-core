@@ -1,27 +1,11 @@
-import * as ley from 'ley'
-
 import sql from '../pg.js'
-import config from '../config.js'
-import { create as createDB } from '../scripts/db.js'
 
 // sut
 import * as store from './slots.js'
 
-beforeAll(async () => {
-  config.postgres.database += '_test'
-
-  await createDB(config.postgres)
-
-  await ley.up({
-    dir: 'migrations',
-    driver: 'postgres',
-    config: config.postgres
-  })
-})
-
 beforeEach(async () => {
   await sql`
-    TRUNCATE TABLE ${sql(store.tableName)} RESTART IDENTITY
+    TRUNCATE TABLE ${sql(store.TABLE_NAME)} RESTART IDENTITY CASCADE
   `
 })
 
@@ -37,8 +21,8 @@ it('TYPES', () => {
   })
 })
 
-it('tableName', () => {
-  expect(store.tableName).toBe('slots')
+it('TABLE_NAME', () => {
+  expect(store.TABLE_NAME).toBe('slots')
 })
 
 const { TYPES } = store
@@ -103,7 +87,7 @@ describe('@listForVehicleType', () => {
 
     await sql`
       INSERT INTO
-        ${sql(store.tableName)} ${sql(rawSlots, 'type', 'distance')}
+        ${sql(store.TABLE_NAME)} ${sql(rawSlots, 'type', 'distance')}
     `
   })
 
@@ -182,7 +166,7 @@ describe('@occupy', () => {
 
     await sql`
       INSERT INTO
-        ${sql(store.tableName)} ${sql(rawSlots, 'type', 'distance')}
+        ${sql(store.TABLE_NAME)} ${sql(rawSlots, 'type', 'distance')}
     `
   })
 
@@ -199,7 +183,7 @@ describe('@occupy', () => {
         created_at AS "createdAt",
         updated_at as "updatedAt"
       FROM
-        ${sql(store.tableName)}
+        ${sql(store.TABLE_NAME)}
       WHERE
         id = ${id}
     `
@@ -245,7 +229,7 @@ describe('@occupy', () => {
       SELECT
         available
       FROM
-        ${sql(store.tableName)}
+        ${sql(store.TABLE_NAME)}
       WHERE
         id = ${id}
     `
@@ -266,7 +250,7 @@ describe('@vacant', () => {
 
     await sql`
       INSERT INTO
-        ${sql(store.tableName)} ${sql(rawSlots, 'type', 'distance', 'available')}
+        ${sql(store.TABLE_NAME)} ${sql(rawSlots, 'type', 'distance', 'available')}
     `
   })
 
@@ -283,7 +267,7 @@ describe('@vacant', () => {
         created_at AS "createdAt",
         updated_at as "updatedAt"
       FROM
-        ${sql(store.tableName)}
+        ${sql(store.TABLE_NAME)}
       WHERE
         id = ${id}
     `
@@ -328,7 +312,7 @@ describe('@vacant', () => {
       SELECT
         available
       FROM
-        ${sql(store.tableName)}
+        ${sql(store.TABLE_NAME)}
       WHERE
         id = ${id}
     `

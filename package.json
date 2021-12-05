@@ -23,6 +23,7 @@
     "pgtools": "^0.3.2"
   },
   "jest": {
-    "verbose": true
+    "verbose": true,
+    "globalSetup": "<rootDir>/tests/setup.js"
   }
 }
