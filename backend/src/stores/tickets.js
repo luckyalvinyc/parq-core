@@ -1,5 +1,7 @@
 import { execute } from './utils.js'
 
+export const TABLE_NAME = 'tickets'
+
 /**
  * Creates a ticket based on the slot occupied
  *
@@ -20,7 +22,7 @@ export async function create (slotId, rate, options = {}) {
 
   const [ ticket ] = await sql`
     INSERT INTO
-      tickets ${sql(rowToBeInserted, 'slot_id', 'rate')}
+      ${sql(TABLE_NAME)} ${sql(rowToBeInserted, 'slot_id', 'rate')}
     RETURNING
       id,
       slot_id AS "slotId",

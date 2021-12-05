@@ -3,9 +3,9 @@ import sql from '../pg.js'
 // sut
 import * as store from './slots.js'
 
-beforeEach(async () => {
+afterEach(async () => {
   await sql`
-    TRUNCATE TABLE ${sql(store.TABLE_NAME)} RESTART IDENTITY CASCADE
+    TRUNCATE TABLE slots RESTART IDENTITY CASCADE
   `
 })
 

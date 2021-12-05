@@ -1,6 +1,6 @@
 import Polka from 'polka'
 
-import skema from './endpoints/middlewares/skema.js'
+import skema from './src/endpoints/middlewares/skema.js'
 
 /**
  * @param {object} config

@@ -1,4 +1,6 @@
 import { env } from 'process'
+import { fileURLToPath } from 'url'
+import { resolve } from 'path'
 import ley from 'ley'
 
 import { create as createDB } from '../scripts/db.js'
@@ -15,6 +17,7 @@ async function setup () {
   await createDB(config.postgres)
 
   await ley.up({
+    cwd: resolve(fileURLToPath(import.meta.url), '..', '..'),
     dir: 'migrations',
     driver: 'postgres',
     config: config.postgres

@@ -5,10 +5,10 @@
   "main": "app.js",
   "type": "module",
   "scripts": {
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "test:backend": "NODE_OPTIONS=--experimental-vm-modules jest --config backend/jest.config.js",
     "db:init": "npm run db:create && npm run db:migrate",
-    "db:create": "node scripts/cli.js create",
-    "db:migrate": "ley up"
+    "db:create": "node backend/scripts/cli.js create",
+    "db:migrate": "ley up --cwd=backend"
   },
   "author": "Lucky Alvin Y. Casipe <luckyalvinyc@gmail.com>",
   "license": "UNLICENSED",
@@ -25,9 +25,5 @@
     "jest": "^27.4.3",
     "ley": "^0.7.1",
     "pgtools": "^0.3.2"
-  },
-  "jest": {
-    "verbose": true,
-    "globalSetup": "<rootDir>/tests/setup.js"
   }
 }
