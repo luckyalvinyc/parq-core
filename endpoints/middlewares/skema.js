@@ -6,6 +6,8 @@ const ALLOWED_TARGETS = new Set(['params', 'body'])
 export default skema
 
 /**
+ * Creates a middleware that can be used to validate incoming requests
+ *
  * @param {object} schemaKeyedByTarget - keys can be one of the following:
  *                                         - params
  *                                         - body
@@ -26,7 +28,7 @@ function skema (schemaKeyedByTarget) {
   }
 
   /**
-   * skema middleawre
+   * skema middleware
    */
 
   return function skema (req, res, next) {

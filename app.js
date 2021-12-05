@@ -1,5 +1,7 @@
 import Polka from 'polka'
 
+import skema from './endpoints/middlewares/skema.js'
+
 /**
  * @param {object} config
  * @param {number} config.port
@@ -39,12 +41,6 @@ export function start (config) {
         error ? reject(error) : resolve()
       })
     })
-  }
-}
-
-function skema () {
-  return function (req, res, next) {
-    next()
   }
 }
 
