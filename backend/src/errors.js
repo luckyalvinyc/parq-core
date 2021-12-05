@@ -1,7 +1,20 @@
 export default createHttpStatusErrors([{
   statusCode: 400,
-  name: 'badRequest'
+  name: 'bad_request'
+}, {
+  statusCode: 404,
+  name: 'not_found'
 }])
+
+/**
+ * Creates an object which will contain methods for throwing HTTP status error
+ *
+ * @param {object[]} httpStatuses
+ * @param {number} httpStatuses[].statusCode
+ * @param {string} httpStatuses[].name
+ * @returns {object}
+ * @private
+ */
 
 function createHttpStatusErrors (httpStatuses) {
   const errors = {}
@@ -24,17 +37,41 @@ function createHttpStatusErrors (httpStatuses) {
   return errors
 }
 
+/**
+ * Converts the given snake_case string to camelCase
+ *
+ * @param {string} string
+ * @returns {string}
+ * @private
+ */
+
 function snakeToCamelCase (string) {
   const segments = string.split('_')
 
   return segments[0] + capitalizeEach(segments.slice(1))
 }
 
+/**
+ * Transforms every string in strings to be capitalized form
+ *
+ * @param {string[]} strings
+ * @returns {string}
+ * @private
+ */
+
 function capitalizeEach (strings) {
   return strings
     .map(capitalize)
     .join('')
 }
+
+/**
+ * Transforms the given string to be capitalized form
+ *
+ * @param {string} string
+ * @returns {string}
+ * @private
+ */
 
 function capitalize (string) {
   return string[0].toUpperCase() + string.slice(1)
