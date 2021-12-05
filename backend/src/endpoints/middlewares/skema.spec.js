@@ -5,9 +5,7 @@ import errors from '../../errors.js'
 
 let schemaKeyedByTarget
 
-let req
-
-let next
+let req, next
 
 beforeEach(() => {
   schemaKeyedByTarget = {
