@@ -3,9 +3,12 @@ const TABLE_NAME = 'slots'
 export async function up (sql) {
   sql`
     CREATE TABLE IF NOT EXISTS ${sql(TABLE_NAME)} (
-      id        serial PRIMARY KEY,
-      distance jsonb,
-      type     varchar
+      id         int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+      distance   jsonb NOT NULL,
+      type       smallint NOT NULL,
+      available  boolean DEFAULT true NOT NULL,
+      created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      updated_at timestamp
     )
   `
 }
