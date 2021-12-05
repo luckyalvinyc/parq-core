@@ -7,7 +7,7 @@
   "scripts": {
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "db:init": "npm run db:create && npm run db:migrate",
-    "db:create": "node scripts/create-db.js",
+    "db:create": "node scripts/cli.js create",
     "db:migrate": "ley up"
   },
   "author": "Lucky Alvin Y. Casipe <luckyalvinyc@gmail.com>",
