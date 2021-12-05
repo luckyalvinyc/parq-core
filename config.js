@@ -1,6 +1,8 @@
 import { env } from 'process'
 
 const {
+  NODE_ENV = 'development',
+
   SMALL_RATE = '20',
   MEDIUM_RATE = '60',
   LARGE_RATE = '100',
@@ -13,6 +15,8 @@ const {
 } = env
 
 export default {
+  isTest: NODE_ENV === 'test',
+
   rates: {
     small: Number(SMALL_RATE),
     medium: Number(MEDIUM_RATE),
