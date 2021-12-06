@@ -53,6 +53,14 @@ it('should return a function', () => {
   expect(middleware).toBeInstanceOf(Function)
 })
 
+it('should skip unknown targets', () => {
+  const middleware = skema({
+    a: { }
+  })
+
+  expect(middleware._validators).toStrictEqual(Object.create(null))
+})
+
 it('should call next without an error if validation suceed', () => {
   const middleware = skema(schemaKeyedByTarget)
 

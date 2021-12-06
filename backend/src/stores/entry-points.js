@@ -10,13 +10,26 @@ export const TABLE_NAME = 'entry_points'
  */
 
 export async function bulkCreate (labels) {
-  return sql`
+  const rowsToBeInserted = []
+
+  for (const label of labels) {
+    rowsToBeInserted.push({
+      label
+    })
+  }
+
+  const entryPoints = await sql`
     INSERT INTO
-      ${sql(TABLE_NAME)} ${sql(labels, 'label')}
+      ${sql(TABLE_NAME)} ${sql(rowsToBeInserted, 'label')}
     RETURNING
       id,
       label
   `
+
+  delete entryPoints.count
+  delete entryPoints.command
+
+  return entryPoints
 }
 
 /**

@@ -27,11 +27,15 @@ function skema (schemaKeyedByTarget) {
     validators[target] = ajv.compile(schemaKeyedByTarget[target])
   }
 
+  skema._validators = validators
+
+  return skema
+
   /**
    * skema middleware
    */
 
-  return function skema (req, res, next) {
+  function skema (req, res, next) {
     for (const target of Object.keys(validators)) {
       const validator = validators[target]
 

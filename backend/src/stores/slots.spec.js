@@ -5,8 +5,12 @@ import * as store from './slots.js'
 
 afterEach(async () => {
   await sql`
-    TRUNCATE TABLE slots RESTART IDENTITY CASCADE
+    TRUNCATE TABLE ${sql(store.TABLE_NAME)} RESTART IDENTITY CASCADE
   `
+})
+
+it('TABLE_NAME', () => {
+  expect(store.TABLE_NAME).toBe('slots')
 })
 
 afterAll(async () => {
@@ -19,10 +23,6 @@ it('TYPES', () => {
     medium: 1,
     large: 2
   })
-})
-
-it('TABLE_NAME', () => {
-  expect(store.TABLE_NAME).toBe('slots')
 })
 
 const { TYPES } = store

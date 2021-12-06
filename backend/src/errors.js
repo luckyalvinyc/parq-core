@@ -1,10 +1,12 @@
-export default createHttpStatusErrors([{
+export const httpStatuses = [{
   statusCode: 400,
   name: 'bad_request'
 }, {
   statusCode: 404,
   name: 'not_found'
-}])
+}]
+
+export default createHttpStatusErrors(httpStatuses)
 
 /**
  * Creates an object which will contain methods for throwing HTTP status error
@@ -45,7 +47,7 @@ function createHttpStatusErrors (httpStatuses) {
  * @private
  */
 
-function snakeToCamelCase (string) {
+export function snakeToCamelCase (string) {
   const segments = string.split('_')
 
   return segments[0] + capitalizeEach(segments.slice(1))

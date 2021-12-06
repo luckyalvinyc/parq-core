@@ -8,11 +8,13 @@ export default postgres({
   password: config.postgres.password,
   database: config.postgres.database,
 
-  onnotice (message) {
-    if (config.isTest) {
-      return
-    }
-
-    console.log(message)
-  }
+  onnotice: onNotice.bind(null, config.isTest)
 })
+
+export function onNotice (isTest, message) {
+  if (isTest) {
+    return
+  }
+
+  console.log(message)
+}

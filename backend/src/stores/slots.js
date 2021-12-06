@@ -1,12 +1,12 @@
 import { execute } from './utils.js'
 
+export const TABLE_NAME = 'slots'
+
 export const TYPES = {
   small: 0,
   medium: 1,
   large: 2
 }
-
-export const TABLE_NAME = 'slots'
 
 /**
  * Creates the provided slots, all slots will be available until occupied

@@ -1,15 +1,34 @@
-import errors from './errors.js'
+import {
+  httpStatuses,
+  snakeToCamelCase,
+  default as errors
+} from './errors.js'
 
-it('should have badRequest method', () => {
-  const error = errors.badRequest()
+httpStatuses.forEach(e => {
+  const method = snakeToCamelCase(e.name)
 
-  expect(error.message).toBe('bad_request')
-  expect(error.statusCode).toBe(400)
-})
+  describe(`@${method}`, () => {
+    it('no args', () => {
+      const error = errors[method]()
 
-it('should have notFound method', () => {
-  const error = errors.notFound()
+      expect(error.message).toBe(e.name)
+      expect(error.statusCode).toBe(e.statusCode)
+    })
 
-  expect(error.message).toBe('not_found')
-  expect(error.statusCode).toBe(404)
+    it('custom message', () => {
+      const error = errors[method]('custom')
+
+      expect(error.message).toBe('custom')
+    })
+
+    it('with data', () => {
+      const error = errors[method]('custom', {
+        a: 1
+      })
+
+      expect(error.data).toStrictEqual({
+        a: 1
+      })
+    })
+  })
 })
