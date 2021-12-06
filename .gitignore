@@ -1,1 +1,5 @@
+# most heaviest object in the universe
 node_modules
+
+# coverage directory for jest's --coverage
+coverage
