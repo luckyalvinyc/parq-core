@@ -5,7 +5,7 @@ import errors from '../../errors.js'
 
 let schemaKeyedByTarget
 
-let req, next
+let req, res, next
 
 beforeEach(() => {
   schemaKeyedByTarget = {
@@ -64,7 +64,7 @@ it('should skip unknown targets', () => {
 it('should call next without an error if validation suceed', () => {
   const middleware = skema(schemaKeyedByTarget)
 
-  middleware(req, {}, next)
+  middleware(req, res, next)
 
   expect(next).toHaveBeenCalledTimes(1)
   expect(next).toHaveBeenCalledWith()
@@ -75,7 +75,7 @@ it('should call next with an error of validation failed for the request body', (
 
   req.body.name = ''
 
-  middleware(req, {}, next)
+  middleware(req, res, next)
 
   expect(next).toHaveBeenCalledTimes(1)
   expect(next).toHaveBeenCalledWith(errors.badRequest('validation'))
@@ -86,7 +86,7 @@ it('should call next with an error of validation failed for the request params',
 
   req.params.id = 0
 
-  middleware(req, {}, next)
+  middleware(req, res, next)
 
   expect(next).toHaveBeenCalledTimes(1)
   expect(next).toHaveBeenCalledWith(errors.badRequest('validation'))

@@ -7,7 +7,7 @@ jest.unstable_mockModule('@polka/send', () => ({
 const { default: send } = await import('@polka/send')
 const { default: helpers } = await import('./helpers.js')
 
-let res, next
+let req, res, next
 
 beforeEach(() => {
   res = {}
@@ -16,7 +16,7 @@ beforeEach(() => {
 
 describe('@send', () => {
   it('should call the internal `send` method', () => {
-    helpers({}, res, next)
+    helpers(req, res, next)
 
     const data = {
       ok: true
@@ -33,7 +33,7 @@ describe('@send', () => {
 
 describe('@status', () => {
   it('should set the `statusCode`', () => {
-    helpers({}, res, next)
+    helpers(req, res, next)
 
     res.status(201)
 
@@ -43,7 +43,7 @@ describe('@status', () => {
   })
 
   it('should return itself so it can be chained', () => {
-    helpers({}, res, next)
+    helpers(req, res, next)
 
     const instance = res.status(201)
 
