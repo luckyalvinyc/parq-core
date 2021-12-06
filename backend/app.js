@@ -1,62 +1,30 @@
-import Polka from 'polka'
+import prexit from 'prexit'
 
-import skema from './src/endpoints/middlewares/skema.js'
+import config from './config.js'
+import sql from './src/pg.js'
+import * as server from './src/server.js'
 
-/**
- * @param {object} config
- * @param {number} config.port
- * @returns {() => Promise<void>}
- */
+prexit(cleanup)
 
-export function start (config) {
-  const server = Polka()
+let close
 
-  server.post('/pay', skema({
-    ticketId: {
-      type: 'integer',
-      minimum: 1
-    }
-  }), async (req, res) => {
-    const { ticketId } = req.body
-
-    const ticket = await store.tickets.findById(ticketId)
-
-    if (!ticket) {
-      throw new Error('not_found')
-    }
-
-    // send
-  })
-
-  server.listen(config.port, onListen.bind(null, config.port))
-
-  return function close () {
-    return new Promise((resolve, reject) => {
-      /**
-       * @type {import('http').Server}
-       */
-      const _server = server.server
-
-      _server.close(error => {
-        error ? reject(error) : resolve()
-      })
-    })
-  }
+try {
+  close = server.start(config.server)
+} catch (error) {
+  await cleanup()
+  process.exit(1)
 }
 
 /**
- * It will be called once the server starts listening to the specified port
- *
- * @param {number} port
- * @param {Error} error
- * @private
+ * Cleans up the following resources:
+ *  - db
+ *  - server
  */
 
-export function onListen (port, error) {
-  if (error) {
-    console.error(error.message)
-    process.exit(1)
-  }
+async function cleanup () {
+  await sql.end()
 
-  console.log(`Listening on port ${port}`)
+  if (close) {
+    await close()
+  }
 }
