@@ -15,7 +15,7 @@ describe('@create', () => {
   }
 
   // doesn't matter what value is assigned here
-  // as we'll be mocking the `sql.begin` and check
+  // as we're mocking the `sql.begin` and check
   // if the `transaction` is being passed properly
   const transaction = 'transaction'
 
