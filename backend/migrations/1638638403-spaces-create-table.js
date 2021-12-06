@@ -1,11 +1,10 @@
-const TABLE_NAME = 'entry_points'
+const TABLE_NAME = 'spaces'
 
 export async function up (sql) {
   await sql`
     CREATE TABLE IF NOT EXISTS ${sql(TABLE_NAME)} (
-      id        int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-      space_id  int REFERENCES spaces (id) NOT NULL,
-      label     varchar NOT NULL
+      id           int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+      entry_points int NOT NULL
     )
   `
 }

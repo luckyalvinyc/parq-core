@@ -6,6 +6,7 @@ export async function up (sql) {
       id         smallint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
       slot_id    int REFERENCES slots (id) NOT NULL,
       rate       numeric NOT NULL,
+      paid       boolean DEFAULT false NOT NULL,
       started_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
       ended_at   timestamp
     )
