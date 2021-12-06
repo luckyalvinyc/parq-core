@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals'
 
-import * as server from './app.js'
+import * as server from './server.js'
 
 describe('@start', () => {
   it('should start the server', async () => {
@@ -15,12 +15,8 @@ describe('@start', () => {
 })
 
 describe('@onListen', () => {
-  afterEach(() => {
-    jest.resetAllMocks()
-  })
-
   it('should log what port the server is listening to', () => {
-    jest.spyOn(console, 'log').mockImplementation(noop)
+    jest.spyOn(console, 'log').mockImplementation(() => {})
 
     server.onListen(3000)
 
@@ -29,8 +25,8 @@ describe('@onListen', () => {
   })
 
   it('should exit the process when an error occurs', () => {
-    jest.spyOn(console, 'error').mockImplementation(noop)
-    jest.spyOn(process, 'exit').mockImplementation(noop)
+    jest.spyOn(console, 'error').mockImplementation(() => {})
+    jest.spyOn(process, 'exit').mockImplementation(() => {})
 
     server.onListen(3000, new Error('test'))
 
@@ -41,7 +37,3 @@ describe('@onListen', () => {
     expect(process.exit).toHaveBeenCalledWith(1)
   })
 })
-
-function noop () {
-  // no operation
-}

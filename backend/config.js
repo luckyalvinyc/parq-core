@@ -3,6 +3,9 @@ import { env } from 'process'
 const {
   NODE_ENV = 'development',
 
+  SERVER_HOST = 'localhost',
+  SERVER_PORT = '3000',
+
   SMALL_RATE = '20',
   MEDIUM_RATE = '60',
   LARGE_RATE = '100',
@@ -16,6 +19,11 @@ const {
 
 export default {
   isTest: NODE_ENV === 'test',
+
+  server: {
+    host: SERVER_HOST,
+    port: parseInt(SERVER_PORT, 10)
+  },
 
   rates: {
     small: Number(SMALL_RATE),
