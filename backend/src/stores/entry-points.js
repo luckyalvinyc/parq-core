@@ -18,7 +18,7 @@ export async function bulkCreate (labels) {
     })
   }
 
-  const entryPoints = await sql`
+  const rows = await sql`
     INSERT INTO
       ${sql(TABLE_NAME)} ${sql(rowsToBeInserted, 'label')}
     RETURNING
@@ -26,10 +26,7 @@ export async function bulkCreate (labels) {
       label
   `
 
-  delete entryPoints.count
-  delete entryPoints.command
-
-  return entryPoints
+  return rows.map(toEntryPoint)
 }
 
 /**
@@ -50,4 +47,18 @@ export async function exists (entryPointId) {
   `
 
   return entryPoint !== undefined
+}
+
+/**
+ * Applies necessary transformation to a given row
+ *
+ * @param {object} row
+ * @private
+ */
+
+function toEntryPoint (row) {
+  return {
+    id: parseInt(row.id, 10),
+    label: row.label
+  }
 }

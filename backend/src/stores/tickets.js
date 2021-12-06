@@ -20,15 +20,31 @@ export async function create (slotId, rate, options = {}) {
     rate
   }
 
-  const [ ticket ] = await sql`
+  const [ row ] = await sql`
     INSERT INTO
       ${sql(TABLE_NAME)} ${sql(rowToBeInserted, 'slot_id', 'rate')}
     RETURNING
       id,
-      slot_id AS "slotId",
+      slot_id,
       rate,
-      started_at AS "startedAt"
+      started_at
   `
 
-  return ticket
+  return toTicket(row)
+}
+
+/**
+ * Applies necessary transformation to a given row
+ *
+ * @param {object} row
+ * @private
+ */
+
+function toTicket (row) {
+  return {
+    id: parseInt(row.id, 10),
+    slotId: row.slot_id,
+    rate: Number(row.rate),
+    startedAt: row.started_at
+  }
 }

@@ -28,7 +28,7 @@ export async function bulkCreate (rawSlots) {
     })
   }
 
-  return sql`
+  const rows = await sql`
     INSERT INTO
       ${sql(TABLE_NAME)} ${sql(rowsToBeInserted, 'type', 'distance')}
     RETURNING
@@ -37,6 +37,8 @@ export async function bulkCreate (rawSlots) {
       distance,
       available
   `
+
+  return rows.map(toSlot)
 }
 
 /**
@@ -56,7 +58,7 @@ export async function listForVehicleType (type) {
     'available'
   ]
 
-  return sql`
+  const rows = await sql`
     SELECT
       ${sql(columns)}
     FROM
@@ -65,6 +67,8 @@ export async function listForVehicleType (type) {
       type >= ${type} AND
       available = true
   `
+
+  return rows.map(toSlot)
 }
 
 /**
@@ -119,4 +123,20 @@ async function updateAvailability (slotId, available, txn) {
     WHERE
       id = ${slotId}
   `
+}
+
+/**
+ * Applies necessary transformation to a given row
+ *
+ * @param {object} row
+ * @private
+ */
+
+function toSlot (row) {
+  return {
+    id: parseInt(row.id, 10),
+    type: row.type,
+    distance: row.distance,
+    available: row.available
+  }
 }
