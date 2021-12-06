@@ -11,6 +11,13 @@ export default postgres({
   onnotice: onNotice.bind(null, config.isTest)
 })
 
+/**
+ * Triggered when a log level of NOTICE is produced from postgres.js
+ *
+ * @param {boolean} isTest
+ * @param {string} message
+ */
+
 export function onNotice (isTest, message) {
   if (isTest) {
     return
