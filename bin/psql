@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+
+USERNAME=${1:-postgres}
+
+docker exec --interactive --tty postgres_dev_parq_core psql -U $USERNAME
