@@ -332,3 +332,42 @@ describe('@vacant', () => {
   })
 })
 
+describe('@includeNewEntryPoint', () => {
+  beforeEach(async () => {
+    const slots = [{
+      space_id: 1,
+      type: TYPES.byValue.small,
+      distance: sql.json({
+        1: 0
+      }),
+      available: false
+    }]
+
+    await sql`
+      INSERT INTO
+        ${sql(store.TABLE_NAME)} ${sql(slots, 'space_id', 'type', 'distance', 'available')}
+    `
+  })
+
+  it('should add the new entry point ID as a key to the `distance`', async () => {
+    await store.includeNewEntryPoint({
+      id: 2,
+      spaceId: 1
+    })
+
+    const [ row ] = await sql`
+      SELECT
+        *
+      FROM
+        slots
+      WHERE
+        id = 1
+    `
+
+    expect(row.distance).toStrictEqual({
+      1: 0,
+      2: 1
+    })
+  })
+})
+

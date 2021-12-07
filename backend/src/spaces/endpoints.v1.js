@@ -9,7 +9,8 @@ route.prefix = 'spaces'
 
 export default route
 
-route.post('/', skema(schemas.create), create)
+route.post('/',
+  skema(schemas.create), create)
 
 /**
  * Handles requests for creating a parking space
@@ -28,14 +29,15 @@ export async function create (req, res) {
   })
 }
 
-route.post('/:id', skema(schemas.update), update)
+route.post('/:spaceId',
+  skema(schemas.update), update)
 
 /**
  * Handles requests for adding slots to a space
  */
 
 export async function update (req, res) {
-  const spaceId = req.params.id
+  const { spaceId }= req.params
   const { slots } = req.body
 
   const createdSlots = await operations.addSlots(spaceId, slots)
@@ -43,6 +45,26 @@ export async function update (req, res) {
   res.send({
     data: {
       slots: createdSlots
+    }
+  })
+}
+
+route.post('/:spaceId/entry_points',
+  skema(schemas.updateForEntryPoints), updateForEntryPoints)
+
+/**
+ * Handles requests for adding an entry point to a space
+ */
+
+async function updateForEntryPoints (req, res) {
+  const { spaceId } = req.params
+  const { label } = req.body
+
+  const entryPoint = await operations.addEntryPoint(spaceId, label)
+
+  res.send({
+    data: {
+      entryPoint
     }
   })
 }

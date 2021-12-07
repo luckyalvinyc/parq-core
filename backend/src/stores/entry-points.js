@@ -3,7 +3,24 @@ import sql from '../pg.js'
 export const TABLE_NAME = 'entry_points'
 
 /**
- * Creates entry points from the given labels
+ * Creates an entry point for a space
+ *
+ * @param {number} spaceId
+ * @param {string} label
+ * @returns {Promise<object>}
+ */
+
+export async function create (spaceId, label) {
+  const [ row ] = await _create({
+    space_id: spaceId,
+    label
+  })
+
+  return toEntryPoint(row)
+}
+
+/**
+ * Creates entry points for a space
  *
  * @param {number} spaceId
  * @param {string[]} labels
@@ -20,16 +37,26 @@ export async function bulkCreate (spaceId, labels) {
     })
   }
 
-  const rows = await sql`
+  const rows = await _create(rowsToBeInserted)
+
+  return rows.map(toEntryPoint)
+}
+
+/**
+ * Query for inserting rows to the `slots` table
+ *
+ * @param {object|object[]} rows
+ */
+
+async function _create (rows) {
+  return sql`
     INSERT INTO
-      ${sql(TABLE_NAME)} ${sql(rowsToBeInserted, 'space_id', 'label')}
+      ${sql(TABLE_NAME)} ${sql(rows, 'space_id', 'label')}
     RETURNING
       id,
       space_id,
       label
   `
-
-  return rows.map(toEntryPoint)
 }
 
 /**
@@ -67,8 +94,8 @@ export async function findById (entryPointId) {
 
 function toEntryPoint (row) {
   return {
-    id: parseInt(row.id, 10),
-    spaceId: parseInt(row.space_id, 10),
+    id: row.id,
+    spaceId: row.space_id,
     label: row.label
   }
 }

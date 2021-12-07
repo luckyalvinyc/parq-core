@@ -1,3 +1,4 @@
+import sql from '../pg.js'
 import { execute } from './utils.js'
 
 export const TABLE_NAME = 'slots'
@@ -15,7 +16,6 @@ export const TYPES = Types()
  */
 
 export async function bulkCreate (spaceId, slots) {
-  const sql = execute()
   const rowsToBeInserted = []
 
   for (const { type, distance } of slots) {
@@ -50,8 +50,6 @@ export async function bulkCreate (spaceId, slots) {
  */
 
 export async function findNearestAvailableSlot (entryPoint, type) {
-  const sql = execute()
-
   const columns = [
     'id',
     'type',
@@ -136,6 +134,31 @@ async function updateAvailability (slotId, available, txn) {
       updated_at = CURRENT_TIMESTAMP
     WHERE
       id = ${slotId}
+  `
+}
+
+/**
+ * Updates all the slots to include the new entry point
+ *
+ * NOTE: This will have a performance penalty once we have many slots to update
+ *
+ * @param {object} entryPoint
+ * @param {number} entryPoint.id
+ * @param {number} entryPoint.spaceId
+ */
+
+export async function includeNewEntryPoint (entryPoint) {
+  const distanceForEntryPoint = sql.json({
+    [entryPoint.id]: 1
+  })
+
+  await sql`
+    UPDATE
+      ${sql(TABLE_NAME)}
+    SET
+      distance = distance || ${distanceForEntryPoint}
+    WHERE
+      space_id = ${entryPoint.spaceId}
   `
 }
 

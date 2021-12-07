@@ -55,3 +55,27 @@ export async function addSlots (spaceId, slots) {
 
   return stores.slots.bulkCreate(spaceId, slots)
 }
+
+/**
+ * Adds a new entry point for a given space
+ *
+ * @param {number} spaceId
+ * @param {string} label
+ * @returns {Promise<object>}
+ */
+
+export async function addEntryPoint (spaceId, label) {
+  const exists = await stores.spaces.exists(spaceId)
+
+  if (!exists) {
+    throw errors.notFound('space', {
+      id: spaceId
+    })
+  }
+
+  const entryPoint = await stores.entryPoints.create(spaceId, label)
+
+  await stores.slots.includeNewEntryPoint(entryPoint)
+
+  return entryPoint
+}

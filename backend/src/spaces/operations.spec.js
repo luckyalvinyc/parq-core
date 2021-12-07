@@ -95,13 +95,77 @@ describe('@addSlots', () => {
     }])
   })
 
-  it('should throw an error if the provided space id does not exists', async () => {
+  it('should throw an error if the provided space ID does not exists', async () => {
     stores.spaces.exists.mockResolvedValue(false)
 
     let error
 
     try {
       await addSlots(spaceId, slots)
+    } catch (err) {
+      error = err
+    }
+
+    expect(error.type).toBe('not_found')
+    expect(error.message).toBe('space')
+    expect(error.data).toStrictEqual({
+      id: 1
+    })
+  })
+})
+
+describe('@addEntryPoint', () => {
+  let addEntryPoint
+
+  const spaceId = 1
+
+  beforeEach(async () => {
+    jest.unstable_mockModule('../stores/index.js', () => ({
+      spaces: {
+        exists: jest.fn().mockResolvedValue(true)
+      },
+
+      entryPoints: {
+        create: jest.fn().mockResolvedValue({
+          id: 1,
+          spaceId
+        })
+      },
+
+      slots: {
+        includeNewEntryPoint: jest.fn().mockResolvedValue()
+      }
+    }))
+
+    stores = await import('../stores/index.js')
+    const operations = await import('./operations.js')
+
+    addEntryPoint = operations.addEntryPoint
+  })
+
+  it('should add a new entry point', async () => {
+    await addEntryPoint(spaceId, 'label')
+
+    expect(stores.spaces.exists).toHaveBeenCalledTimes(1)
+    expect(stores.spaces.exists).toHaveBeenCalledWith(1)
+
+    expect(stores.entryPoints.create).toHaveBeenCalledTimes(1)
+    expect(stores.entryPoints.create).toHaveBeenCalledWith(1, 'label')
+
+    expect(stores.slots.includeNewEntryPoint).toHaveBeenCalledTimes(1)
+    expect(stores.slots.includeNewEntryPoint).toHaveBeenCalledWith({
+      id: 1,
+      spaceId: 1
+    })
+  })
+
+  it('should throw an error if the provided space ID does not exists', async () => {
+    stores.spaces.exists.mockResolvedValue(false)
+
+    let error
+
+    try {
+      await addEntryPoint(spaceId, 'label')
     } catch (err) {
       error = err
     }

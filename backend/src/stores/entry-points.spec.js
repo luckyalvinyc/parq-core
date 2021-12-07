@@ -31,6 +31,18 @@ afterAll(async () => {
   await sql.end()
 })
 
+describe('@create', () => {
+  it('should create an entry point from the provided label', async () => {
+    const entryPoint = await store.create(1, 'a')
+
+    expect(entryPoint).toStrictEqual({
+      id: 1,
+      spaceId: 1,
+      label: 'a'
+    })
+  })
+})
+
 describe('@bulkCreate', () => {
   it('should create entry points from the provided labels', async () => {
     const entryPoints = await store.bulkCreate(1, ['a', 'b'])

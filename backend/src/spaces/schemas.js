@@ -47,3 +47,14 @@ export const update = {
     }
   }
 }
+
+export const updateForEntryPoints = {
+  type: 'object',
+  required: ['label'],
+  properties: {
+    label: {
+      type: 'string',
+      minLength: 1
+    }
+  }
+}
