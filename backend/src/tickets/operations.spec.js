@@ -3,10 +3,11 @@ import { jest } from '@jest/globals'
 // dependencies
 let stores
 
-let req, res
+describe('@issueTicket', () => {
+  let issueTicket
 
-describe('@create', () => {
-  let create
+  const entryPointId = 1
+  const vehicleType = 'small'
 
   const ticket = {
     id: 1,
@@ -19,18 +20,7 @@ describe('@create', () => {
   const transaction = 'transaction'
 
   beforeEach(async () => {
-    req = {
-      body: {
-        entryPointId: 1,
-        vehicleType: 'small'
-      }
-    }
-
-    res = {
-      send: jest.fn()
-    }
-
-    jest.unstable_mockModule('../../stores/index.js', () => ({
+    jest.unstable_mockModule('../stores/index.js', () => ({
       entryPoints: {
         findById: jest.fn().mockResolvedValue({
           id: 1,
@@ -51,20 +41,20 @@ describe('@create', () => {
       }
     }))
 
-    jest.unstable_mockModule('../../pg.js', () => ({
+    jest.unstable_mockModule('../pg.js', () => ({
       default: {
         begin: jest.fn().mockImplementation(async fn => fn(transaction))
       }
     }))
 
-    stores = await import('../../stores/index.js')
-    const route = await import('./tickets.js')
+    stores = await import('../stores/index.js')
+    const operations = await import('./operations.js')
 
-    create = route.create
+    issueTicket = operations.issueTicket
   })
 
-  it('should create a ticket for a vehicle type', async () => {
-    await create(req, res)
+  it('should issue a ticket from an entry point for a vehicle type', async () => {
+    const issuedTicket = await issueTicket(entryPointId, vehicleType)
 
     expect(stores.slots.findNearestAvailableSlot).toHaveBeenCalledTimes(1)
     expect(stores.slots.findNearestAvailableSlot).toHaveBeenCalledWith({
@@ -78,16 +68,14 @@ describe('@create', () => {
     })
 
     expect(stores.tickets.create).toHaveBeenCalledTimes(1)
-    expect(stores.tickets.create).toHaveBeenCalledWith(1, 'small', {
+    expect(stores.tickets.create).toHaveBeenCalledWith({
+      id: 1,
+      type: 'small'
+    }, {
       txn: 'transaction'
     })
 
-    expect(res.send).toHaveBeenCalledTimes(1)
-    expect(res.send).toHaveBeenCalledWith({
-      data: {
-        ticket
-      }
-    })
+    expect(issuedTicket).toStrictEqual(ticket)
   })
 
   it('should throw an error if entry point does not exists', async () => {
@@ -96,7 +84,7 @@ describe('@create', () => {
     let error
 
     try {
-      await create(req, res)
+      await issueTicket(entryPointId, vehicleType)
     } catch (err) {
       error = err
     }
@@ -113,7 +101,7 @@ describe('@create', () => {
     let error
 
     try {
-      await create(req, res)
+      await issueTicket(entryPointId, vehicleType)
     } catch (err) {
       error = err
     }

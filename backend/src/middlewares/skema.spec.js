@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals'
 
 import skema from './skema.js'
-import errors from '../../errors.js'
+import errors from '../errors.js'
 
 let schemaKeyedByTarget
 

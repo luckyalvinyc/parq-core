@@ -1,7 +1,7 @@
 import Ajv from 'ajv'
 import addFormats from 'ajv-formats'
 
-import errors from '../../errors.js'
+import errors from '../errors.js'
 
 const ALLOWED_TARGETS = new Set(['params', 'body'])
 

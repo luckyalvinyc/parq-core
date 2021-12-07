@@ -9,7 +9,7 @@ prexit(cleanup)
 let close
 
 try {
-  close = server.start(config.server)
+  close = await server.start(config.server)
 } catch (error) {
   await cleanup()
   process.exit(1)

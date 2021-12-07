@@ -12,6 +12,16 @@ let sql
 beforeAll(async () => {
   sql = utils.db.replace(jest, '../pg.js', db.name)
 
+  jest.unstable_mockModule('../../config.js', () => ({
+    default: {
+      rates: {
+        perHour: {
+          small: 5
+        }
+      }
+    }
+  }))
+
   store = await import('./tickets.js')
 })
 
@@ -48,10 +58,10 @@ describe('@create', () => {
   })
 
   it('should create a ticket based on the provided slot', async () => {
-    const slotId = 1
-    const rate = 20
-
-    const ticket = await store.create(slotId, rate)
+    const ticket = await store.create({
+      id: 1,
+      type: 'small'
+    })
 
     expect(ticket.startedAt.valueOf()).toBeLessThan(Date.now())
     delete ticket.startedAt
@@ -59,7 +69,7 @@ describe('@create', () => {
     expect(ticket).toStrictEqual({
       id: 1,
       slotId: 1,
-      rate: 20
+      rate: 5
     })
   })
 })
