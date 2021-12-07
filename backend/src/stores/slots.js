@@ -145,9 +145,13 @@ async function updateAvailability (slotId, available, txn) {
  * @param {object} entryPoint
  * @param {number} entryPoint.id
  * @param {number} entryPoint.spaceId
+ * @param {object} [options]
+ * @param {object} [options.txn]
  */
 
-export async function includeNewEntryPoint (entryPoint) {
+export async function includeNewEntryPoint (entryPoint, options = {}) {
+  const sql = execute(options.txn)
+
   const distanceForEntryPoint = sql.json({
     [entryPoint.id]: 1
   })

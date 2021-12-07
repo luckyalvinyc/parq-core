@@ -118,22 +118,31 @@ describe('@addEntryPoint', () => {
   let addEntryPoint
 
   const spaceId = 1
+  const transaction = 'transaction'
 
   beforeEach(async () => {
     jest.unstable_mockModule('../stores/index.js', () => ({
       spaces: {
-        exists: jest.fn().mockResolvedValue(true)
+        exists: jest.fn().mockResolvedValue(true),
+        incrementEntryPoints: jest.fn().mockResolvedValue()
       },
 
       entryPoints: {
         create: jest.fn().mockResolvedValue({
           id: 1,
-          spaceId
+          spaceId,
+          label: 'label'
         })
       },
 
       slots: {
         includeNewEntryPoint: jest.fn().mockResolvedValue()
+      }
+    }))
+
+    jest.unstable_mockModule('../pg.js', () => ({
+      default: {
+        begin: jest.fn().mockImplementation(async fn => fn(transaction))
       }
     }))
 
@@ -144,18 +153,34 @@ describe('@addEntryPoint', () => {
   })
 
   it('should add a new entry point', async () => {
-    await addEntryPoint(spaceId, 'label')
+    const entryPoint = await addEntryPoint(spaceId, 'label')
 
     expect(stores.spaces.exists).toHaveBeenCalledTimes(1)
     expect(stores.spaces.exists).toHaveBeenCalledWith(1)
 
     expect(stores.entryPoints.create).toHaveBeenCalledTimes(1)
-    expect(stores.entryPoints.create).toHaveBeenCalledWith(1, 'label')
+    expect(stores.entryPoints.create).toHaveBeenCalledWith(1, 'label', {
+      txn: 'transaction'
+    })
+
+    expect(stores.spaces.incrementEntryPoints).toHaveBeenCalledTimes(1)
+    expect(stores.spaces.incrementEntryPoints).toHaveBeenCalledWith(1, {
+      txn: 'transaction'
+    })
 
     expect(stores.slots.includeNewEntryPoint).toHaveBeenCalledTimes(1)
     expect(stores.slots.includeNewEntryPoint).toHaveBeenCalledWith({
       id: 1,
-      spaceId: 1
+      spaceId: 1,
+      label: 'label'
+    }, {
+      txn: 'transaction'
+    })
+
+    expect(entryPoint).toStrictEqual({
+      id: 1,
+      spaceId: 1,
+      label: 'label'
     })
   })
 

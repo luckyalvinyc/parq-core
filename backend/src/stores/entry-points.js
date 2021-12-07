@@ -1,4 +1,5 @@
 import sql from '../pg.js'
+import { execute } from './utils.js'
 
 export const TABLE_NAME = 'entry_points'
 
@@ -7,14 +8,16 @@ export const TABLE_NAME = 'entry_points'
  *
  * @param {number} spaceId
  * @param {string} label
+ * @param {object} [options]
+ * @param {object} [options.txn]
  * @returns {Promise<object>}
  */
 
-export async function create (spaceId, label) {
+export async function create (spaceId, label, options = {}) {
   const [ row ] = await _create({
     space_id: spaceId,
     label
-  })
+  }, options.txn)
 
   return toEntryPoint(row)
 }
@@ -46,9 +49,12 @@ export async function bulkCreate (spaceId, labels) {
  * Query for inserting rows to the `slots` table
  *
  * @param {object|object[]} rows
+ * @param {object} [txn]
  */
 
-async function _create (rows) {
+async function _create (rows, txn) {
+  const sql = execute(txn)
+
   return sql`
     INSERT INTO
       ${sql(TABLE_NAME)} ${sql(rows, 'space_id', 'label')}

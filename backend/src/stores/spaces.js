@@ -1,4 +1,5 @@
 import sql from '../pg.js'
+import { execute } from './utils.js'
 
 export const TABLE_NAME = 'spaces'
 
@@ -43,4 +44,25 @@ export async function exists (spaceId) {
   `
 
   return row !== undefined
+}
+
+/**
+ * Increments the total number of entry points for a space
+ *
+ * @param {number} spaceId
+ * @param {object} [options]
+ * @param {object} [options.txn]
+ */
+
+export async function incrementEntryPoints (spaceId, options = {}) {
+  const sql = execute(options.txn)
+
+  await sql`
+    UPDATE
+      ${sql(TABLE_NAME)}
+    SET
+      entry_points = entry_points + 1
+    WHERE
+      id = ${spaceId}
+  `
 }

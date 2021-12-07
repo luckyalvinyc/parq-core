@@ -1,3 +1,4 @@
+import sql from '../pg.js'
 import errors from '../errors.js'
 import * as stores from '../stores/index.js'
 
@@ -73,9 +74,22 @@ export async function addEntryPoint (spaceId, label) {
     })
   }
 
-  const entryPoint = await stores.entryPoints.create(spaceId, label)
+  const entryPoint = await sql.begin(async sql => {
+    const entryPoint = await stores.entryPoints.create(spaceId, label, {
+      txn: sql
+    })
 
-  await stores.slots.includeNewEntryPoint(entryPoint)
+    await stores.spaces.incrementEntryPoints(spaceId, {
+      txn: sql
+    })
+
+    await stores.slots.includeNewEntryPoint(entryPoint, {
+      txn: sql
+    })
+
+
+    return entryPoint
+  })
 
   return entryPoint
 }
