@@ -1,164 +1,170 @@
-import sql from '../pg.js'
+import { jest } from '@jest/globals'
 
-// sut
-import * as store from './slots.js'
+import * as utils from '../../tests/utils.js'
 
-afterEach(async () => {
+/**
+ * @type {import('./slots.js')}
+ */
+let store
+
+let TYPES
+
+let sql
+
+beforeAll(async () => {
+  sql = utils.db.replace(jest, '../pg.js', db.name)
+
+  store = await import('./slots.js')
+  TYPES = store.TYPES
+})
+
+beforeEach(async () => {
   await sql`
-    TRUNCATE TABLE ${sql(store.TABLE_NAME)} RESTART IDENTITY CASCADE
+    TRUNCATE TABLE slots RESTART IDENTITY CASCADE
   `
+
+  await sql`
+    INSERT INTO
+      spaces (entry_points)
+    VALUES (3)
+  `
+})
+
+afterAll(async () => {
+  await sql.end()
 })
 
 it('TABLE_NAME', () => {
   expect(store.TABLE_NAME).toBe('slots')
 })
 
-afterAll(async () => {
-  await sql.end({ timeout: 0 })
-})
-
 it('TYPES', () => {
-  expect(store.TYPES).toStrictEqual({
-    small: 0,
-    medium: 1,
-    large: 2
+  expect(store.TYPES).toEqual({
+    byLabel: {
+      small: 'small',
+      medium: 'medium',
+      large: 'large'
+    },
+    byValue: {
+      small: 0,
+      medium: 1,
+      large: 2
+    },
+    labels: [
+      'small',
+      'medium',
+      'large'
+    ],
+    to: expect.any(Function),
+    from: expect.any(Function)
   })
 })
-
-const { TYPES } = store
 
 describe('@bulkCreate', () => {
   it('should create the provided slots', async () => {
     const rawSlots = [{
-      type: TYPES.small,
+      type: TYPES.byLabel.small,
       distance: {
         1: 0,
         2: 1
       }
     }, {
-      type: TYPES.medium,
+      type: TYPES.byLabel.medium,
       distance: {
         1: 1,
         2: 0
       }
     }]
 
-    const slots = await store.bulkCreate(rawSlots)
+    const slots = await store.bulkCreate(1, rawSlots)
 
     expect(slots.length).toBe(2)
-    expect(slots).toStrictEqual(expect.arrayContaining([{
+    expect(slots).toEqual([{
       id: 1,
-      type: TYPES.small,
-      distance: {
-        1: 0,
-        2: 1
-      },
+      type: TYPES.byLabel.small,
       available: true
     }, {
       id: 2,
-      type: TYPES.medium,
-      distance: {
-        1: 1,
-        2: 0
-      },
+      type: TYPES.byLabel.medium,
       available: true
-    }]))
+    }])
   })
 })
 
-describe('@listForVehicleType', () => {
+describe('@findNearestAvailableSlot', () => {
+  const spaceId = 1
+  const entryPointId1 = 1
+  const entryPointId2 = 2
+  const entryPointId3 = 3
+
   beforeEach(async () => {
-    const rawSlots = [{
-      type: TYPES.small,
+    const slots = [{
+      space_id: spaceId,
+      type: TYPES.byValue.small,
       distance: sql.json({
-        1: 0
-      })
+        [entryPointId1]: 0.10,
+        [entryPointId2]: 0.5,
+        [entryPointId3]: 0.3
+      }),
+      available: true
     }, {
-      type: TYPES.medium,
+      space_id: spaceId,
+      type: TYPES.byValue.medium,
       distance: sql.json({
-        1: 0.1
-      })
+        [entryPointId1]: 0.01,
+        [entryPointId2]: 1,
+        [entryPointId3]: 0.05
+      }),
+      available: true
     }, {
-      type: TYPES.large,
+      space_id: spaceId,
+      type: TYPES.byValue.large,
       distance: sql.json({
-        1: 0.2
-      })
+        [entryPointId1]: 1,
+        [entryPointId2]: 0.20,
+        [entryPointId3]: 0.25
+      }),
+      available: false
     }]
 
     await sql`
       INSERT INTO
-        ${sql(store.TABLE_NAME)} ${sql(rawSlots, 'type', 'distance')}
+        ${sql(store.TABLE_NAME)} ${sql(slots, 'space_id', 'type', 'distance', 'available')}
     `
   })
 
-  it('should list slots for small vehicle which includes small, medium and large', async () => {
-    const slots = await store.listForVehicleType(TYPES.small)
+  it('should return the nearest available slot from an entry point', async () => {
+    const slot = await store.findNearestAvailableSlot({
+      id: entryPointId1,
+      spaceId
+    }, TYPES.byLabel.small)
 
-    expect(slots.length).toBe(3)
-    expect(slots).toStrictEqual(expect.arrayContaining([{
-      id: 1,
-      type: TYPES.small,
-      distance: {
-        1: 0
-      },
-      available: true
-    }, {
+    expect(slot).toStrictEqual({
       id: 2,
-      type: TYPES.medium,
-      distance: {
-        1: 0.1
-      },
+      type: TYPES.byLabel.medium,
       available: true
-    }, {
-      id: 3,
-      type: TYPES.large,
-      distance: {
-        1: 0.2
-      },
-      available: true
-    }]))
+    })
   })
 
-  it('should list slots for medium vehicle which includes medium and large', async () => {
-    const slots = await store.listForVehicleType(TYPES.medium)
+  it('should return null if no available slots for a vehicle type', async () => {
+    const slot = await store.findNearestAvailableSlot({
+      id: entryPointId2,
+      spaceId
+    }, TYPES.byLabel.large)
 
-    expect(slots.length).toBe(2)
-    expect(slots).toStrictEqual(expect.arrayContaining([{
-      id: 2,
-      type: TYPES.medium,
-      distance: {
-        1: 0.1
-      },
-      available: true
-    }, {
-      id: 3,
-      type: TYPES.large,
-      distance: {
-        1: 0.2
-      },
-      available: true
-    }]))
-  })
-
-  it('should list slots for large vehicle which includes large only', async () => {
-    const slots = await store.listForVehicleType(TYPES.large)
-
-    expect(slots.length).toBe(1)
-    expect(slots).toStrictEqual(expect.arrayContaining([{
-      id: 3,
-      type: TYPES.large,
-      distance: {
-        1: 0.2
-      },
-      available: true
-    }]))
+    expect(slot).toBe(null)
   })
 })
 
 describe('@occupy', () => {
+  let slotId
+
   beforeEach(async () => {
-    const rawSlots = [{
-      type: TYPES.small,
+    slotId = 1
+
+    const slots = [{
+      space_id: 1,
+      type: TYPES.byValue.small,
       distance: sql.json({
         1: 0
       })
@@ -166,13 +172,12 @@ describe('@occupy', () => {
 
     await sql`
       INSERT INTO
-        ${sql(store.TABLE_NAME)} ${sql(rawSlots, 'type', 'distance')}
+        ${sql(store.TABLE_NAME)} ${sql(slots, 'space_id', 'type', 'distance')}
     `
   })
 
   it('should set `available` column to `false`', async () => {
-    const id = 1
-    const isUpdated = await store.occupy(id)
+    const isUpdated = await store.occupy(slotId)
 
     expect(isUpdated).toBe(true)
 
@@ -185,7 +190,7 @@ describe('@occupy', () => {
       FROM
         ${sql(store.TABLE_NAME)}
       WHERE
-        id = ${id}
+        id = ${slotId}
     `
 
     expect(slot.updatedAt.valueOf()).toBeGreaterThan(slot.createdAt.valueOf())
@@ -198,21 +203,19 @@ describe('@occupy', () => {
     })
   })
 
-  it('should not update if the provided `id` does not exists', async () => {
-    const id = 2
-    const isUpdated = await store.occupy(id)
+  it('should not update if the provided `slotId` does not exists', async () => {
+    slotId = 2
+    const isUpdated = await store.occupy(slotId)
 
     expect(isUpdated).toBe(false)
   })
 
   it('should use the transaction context if provided', async () => {
-    const id = 1
-
     let error
 
     try {
       await sql.begin(async sql => {
-        await store.occupy(id, {
+        await store.occupy(slotId, {
           txn: sql
         })
 
@@ -231,7 +234,7 @@ describe('@occupy', () => {
       FROM
         ${sql(store.TABLE_NAME)}
       WHERE
-        id = ${id}
+        id = ${slotId}
     `
 
     expect(slot.available).toBe(true)
@@ -239,9 +242,14 @@ describe('@occupy', () => {
 })
 
 describe('@vacant', () => {
+  let slotId
+
   beforeEach(async () => {
-    const rawSlots = [{
-      type: TYPES.small,
+    slotId = 1
+
+    const slots = [{
+      space_id: 1,
+      type: TYPES.byValue.small,
       distance: sql.json({
         1: 0
       }),
@@ -250,13 +258,12 @@ describe('@vacant', () => {
 
     await sql`
       INSERT INTO
-        ${sql(store.TABLE_NAME)} ${sql(rawSlots, 'type', 'distance', 'available')}
+        ${sql(store.TABLE_NAME)} ${sql(slots, 'space_id', 'type', 'distance', 'available')}
     `
   })
 
   it('should set `available` column to `true`', async () => {
-    const id = 1
-    const isUpdated = await store.vacant(id)
+    const isUpdated = await store.vacant(slotId)
 
     expect(isUpdated).toBe(true)
 
@@ -269,7 +276,7 @@ describe('@vacant', () => {
       FROM
         ${sql(store.TABLE_NAME)}
       WHERE
-        id = ${id}
+        id = ${slotId}
     `
 
     expect(slot.updatedAt.valueOf()).toBeGreaterThan(slot.createdAt.valueOf())
@@ -282,21 +289,19 @@ describe('@vacant', () => {
     })
   })
 
-  it('should not update if the provided `id` does not exists', async () => {
-    const id = 2
-    const isUpdated = await store.vacant(id)
+  it('should not update if the provided `slotId` does not exists', async () => {
+    slotId = 2
+    const isUpdated = await store.vacant(slotId)
 
     expect(isUpdated).toBe(false)
   })
 
   it('should use the transaction context if provided', async () => {
-    const id = 1
-
     let error
 
     try {
       await sql.begin(async sql => {
-        await store.vacant(id, {
+        await store.vacant(slotId, {
           txn: sql
         })
 
@@ -314,7 +319,7 @@ describe('@vacant', () => {
       FROM
         ${sql(store.TABLE_NAME)}
       WHERE
-        id = ${id}
+        id = ${slotId}
     `
 
     expect(slot.available).toBe(false)

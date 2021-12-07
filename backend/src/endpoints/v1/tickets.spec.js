@@ -31,19 +31,19 @@ describe('@create', () => {
       send: jest.fn()
     }
 
-    jest.unstable_mockModule('../stores/index.js', () => ({
+    jest.unstable_mockModule('../../stores/index.js', () => ({
       entryPoints: {
-        exists: jest.fn().mockResolvedValue(true)
+        findById: jest.fn().mockResolvedValue({
+          id: 1,
+          spaceId: 1
+        })
       },
 
       slots: {
-        listForVehicleType: jest.fn().mockResolvedValue([{
+        findNearestAvailableSlot: jest.fn().mockResolvedValue({
           id: 1,
-          distance: {
-            1: 0.1
-          },
           type: 'small'
-        }]),
+        }),
         occupy: jest.fn().mockResolvedValue()
       },
 
@@ -52,21 +52,13 @@ describe('@create', () => {
       }
     }))
 
-    jest.unstable_mockModule('../pg.js', () => ({
+    jest.unstable_mockModule('../../pg.js', () => ({
       default: {
         begin: jest.fn().mockImplementation(async fn => fn(transaction))
       }
     }))
 
-    jest.unstable_mockModule('../../config.js', () => ({
-      default: {
-        rates: {
-          small: 2
-        }
-      }
-    }))
-
-    stores = await import('../stores/index.js')
+    stores = await import('../../stores/index.js')
     const route = await import('./tickets.js')
 
     create = route.create
@@ -75,8 +67,11 @@ describe('@create', () => {
   it('should create a ticket for a vehicle type', async () => {
     await create(req, res)
 
-    expect(stores.slots.listForVehicleType).toHaveBeenCalledTimes(1)
-    expect(stores.slots.listForVehicleType).toHaveBeenCalledWith('small')
+    expect(stores.slots.findNearestAvailableSlot).toHaveBeenCalledTimes(1)
+    expect(stores.slots.findNearestAvailableSlot).toHaveBeenCalledWith({
+      id: 1,
+      spaceId: 1
+    }, 'small')
 
     expect(stores.slots.occupy).toHaveBeenCalledTimes(1)
     expect(stores.slots.occupy).toHaveBeenCalledWith(1, {
@@ -84,7 +79,7 @@ describe('@create', () => {
     })
 
     expect(stores.tickets.create).toHaveBeenCalledTimes(1)
-    expect(stores.tickets.create).toHaveBeenCalledWith(1, 2, {
+    expect(stores.tickets.create).toHaveBeenCalledWith(1, 'small', {
       txn: 'transaction'
     })
 
@@ -97,7 +92,7 @@ describe('@create', () => {
   })
 
   it('should throw an error if entry point does not exists', async () => {
-    stores.entryPoints.exists.mockResolvedValue(false)
+    stores.entryPoints.findById.mockResolvedValue(null)
 
     let error
 
@@ -114,7 +109,7 @@ describe('@create', () => {
   })
 
   it('should throw an error if no slots are available', async () => {
-    stores.slots.listForVehicleType.mockResolvedValue([])
+    stores.slots.findNearestAvailableSlot.mockResolvedValue(null)
 
     let error
 
@@ -125,45 +120,5 @@ describe('@create', () => {
     }
 
     expect(error.message).toBe('no_available_slots')
-  })
-})
-
-describe('@findNearestSlot', () => {
-  const slot1 = {
-    id: 1,
-    distance: {
-      1: 1,
-      2: 0.5
-    }
-  }
-
-  const slot2 = {
-    id: 2,
-    distance: {
-      1: 0.5,
-      2: 0.3
-    }
-  }
-
-  const slot3 = {
-    id: 3,
-    distance: {
-      1: 0.3,
-      2: 1
-    }
-  }
-
-  const slots = [slot1, slot2, slot3]
-
-  it('should return the nearest slot from entry point 1', () => {
-    const slot = route.findNearestSlot(1, slots)
-
-    expect(slot).toStrictEqual(slot3)
-  })
-
-  it('should return the nearest slot from entry point 2', () => {
-    const slot = route.findNearestSlot(2, slots)
-
-    expect(slot).toStrictEqual(slot2)
   })
 })

@@ -1,16 +1,34 @@
-import sql from '../pg.js'
+import { jest } from '@jest/globals'
 
-// sut
-import * as store from './entry-points.js'
+import * as utils from '../../tests/utils.js'
 
-afterEach(async () => {
+/**
+ * @type {import('./entry-points.js')}
+ */
+let store
+
+let sql
+
+beforeAll(async () => {
+  sql = utils.db.replace(jest, '../pg.js', db.name)
+
+  store = await import('./entry-points.js')
+})
+
+beforeEach(async () => {
   await sql`
     TRUNCATE ${sql(store.TABLE_NAME)} RESTART IDENTITY CASCADE
+  `
+
+  await sql`
+    INSERT INTO
+      spaces (entry_points)
+    VALUES (3)
   `
 })
 
 afterAll(async () => {
-  await sql.end({ timeout: 0 })
+  await sql.end()
 })
 
 it('TABLE_NAME', () => {
@@ -19,40 +37,47 @@ it('TABLE_NAME', () => {
 
 describe('@bulkCreate', () => {
   it('should create entry points from the provided labels', async () => {
-    const entryPoints = await store.bulkCreate(['a', 'b'])
+    const entryPoints = await store.bulkCreate(1, ['a', 'b'])
 
     expect(entryPoints).toStrictEqual([{
       id: 1,
+      spaceId: 1,
       label: 'a'
     }, {
       id: 2,
+      spaceId: 1,
       label: 'b'
     }])
   })
 })
 
-describe('@exists', () => {
+describe('@findById', () => {
   beforeEach(async () => {
     const rowsToBeInserted = [{
       id: 1,
+      space_id: 1,
       label: 'a'
     }]
 
     await sql`
       INSERT INTO
-        ${sql(store.TABLE_NAME)} ${sql(rowsToBeInserted, 'label')}
+        ${sql(store.TABLE_NAME)} ${sql(rowsToBeInserted, 'space_id', 'label')}
     `
   })
 
-  it('should return true if the provided entry point exists', async () => {
-    const exists = await store.exists(1)
+  it('should return the entry point for a given id', async () => {
+    const entryPoint = await store.findById(1)
 
-    expect(exists).toBe(true)
+    expect(entryPoint).toStrictEqual({
+      id: 1,
+      spaceId: 1,
+      label: 'a'
+    })
   })
 
-  it('should returnf alse if the provided entry point does not exists', async () => {
-    const exists = await store.exists(2)
+  it('should return null if the provided entry point does not exists', async () => {
+    const entryPoint = await store.findById(2)
 
-    expect(exists).toBe(false)
+    expect(entryPoint).toBe(null)
   })
 })

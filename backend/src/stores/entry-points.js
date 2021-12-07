@@ -5,24 +5,27 @@ export const TABLE_NAME = 'entry_points'
 /**
  * Creates entry points from the given labels
  *
+ * @param {number} spaceId
  * @param {string[]} labels
  * @returns {Promise<object[]>}
  */
 
-export async function bulkCreate (labels) {
+export async function bulkCreate (spaceId, labels) {
   const rowsToBeInserted = []
 
   for (const label of labels) {
     rowsToBeInserted.push({
+      space_id: spaceId,
       label
     })
   }
 
   const rows = await sql`
     INSERT INTO
-      ${sql(TABLE_NAME)} ${sql(rowsToBeInserted, 'label')}
+      ${sql(TABLE_NAME)} ${sql(rowsToBeInserted, 'space_id', 'label')}
     RETURNING
       id,
+      space_id,
       label
   `
 
@@ -30,23 +33,29 @@ export async function bulkCreate (labels) {
 }
 
 /**
- * Checks if the given entry point exists
+ * Retrieves an entry point from the given id
  *
  * @param {number} entryPointId
- * @returns {Promise<boolean>}
+ * @returns {Promise<object>}
  */
 
-export async function exists (entryPointId) {
-  const [ entryPoint ] = await sql`
+export async function findById (entryPointId) {
+  const [ row ] = await sql`
     SELECT
-      id
+      id,
+      space_id,
+      label
     FROM
       ${sql(TABLE_NAME)}
     WHERE
       id = ${entryPointId}
   `
 
-  return entryPoint !== undefined
+  if (!row) {
+    return null
+  }
+
+  return toEntryPoint(row)
 }
 
 /**
@@ -59,6 +68,7 @@ export async function exists (entryPointId) {
 function toEntryPoint (row) {
   return {
     id: parseInt(row.id, 10),
+    spaceId: parseInt(row.space_id, 10),
     label: row.label
   }
 }

@@ -1,16 +1,34 @@
-import sql from '../pg.js'
+import { jest } from '@jest/globals'
 
-// sut
-import * as store from './tickets.js'
+import * as utils from '../../tests/utils.js'
 
-afterEach(async () => {
+/**
+ * @type {import('./tickets.js')}
+ */
+let store
+
+let sql
+
+beforeAll(async () => {
+  sql = utils.db.replace(jest, '../pg.js', db.name)
+
+  store = await import('./tickets.js')
+})
+
+beforeEach(async () => {
   await sql`
-    TRUNCATE slots RESTART IDENTITY CASCADE
+    TRUNCATE ${sql(store.TABLE_NAME)} RESTART IDENTITY CASCADE
+  `
+
+  await sql`
+    INSERT INTO
+      spaces (entry_points)
+    VALUES (3)
   `
 })
 
 afterAll(async () => {
-  await sql.end({ timeout: 0 })
+  await sql.end()
 })
 
 it('TABLE_NAME', () => {
@@ -19,7 +37,8 @@ it('TABLE_NAME', () => {
 
 describe('@create', () => {
   beforeEach(async () => {
-    const rowToBeInserted = {
+    const slot = {
+      space_id: 1,
       type: 0,
       distance: sql.json({
         1: 0
@@ -28,7 +47,7 @@ describe('@create', () => {
 
     await sql`
       INSERT INTO
-        slots ${sql(rowToBeInserted, 'type', 'distance')}
+        slots ${sql(slot, 'space_id', 'type', 'distance')}
     `
   })
 
