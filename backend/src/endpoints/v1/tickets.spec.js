@@ -1,5 +1,4 @@
 import { jest } from '@jest/globals'
-import * as route from './tickets.js'
 
 // dependencies
 let stores

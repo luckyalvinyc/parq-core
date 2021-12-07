@@ -20,6 +20,7 @@
     "@polka/parse": "^1.0.0-next.21",
     "@polka/send": "^1.0.0-next.15",
     "ajv": "^8.8.2",
+    "ajv-formats": "^2.1.1",
     "polka": "^1.0.0-next.22",
     "postgres": "^2.0.0-beta.11",
     "prexit": "^1.0.0"

@@ -11,6 +11,7 @@ httpStatuses.forEach(e => {
     it('no args', () => {
       const error = errors[method]()
 
+      expect(error.type).toBe(e.name)
       expect(error.message).toBe(e.name)
       expect(error.statusCode).toBe(e.statusCode)
     })

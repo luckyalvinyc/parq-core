@@ -1,4 +1,6 @@
 import Ajv from 'ajv'
+import addFormats from 'ajv-formats'
+
 import errors from '../../errors.js'
 
 const ALLOWED_TARGETS = new Set(['params', 'body'])
@@ -11,11 +13,19 @@ export default skema
  * @param {object} schemaKeyedByTarget - keys can be one of the following:
  *                                         - params
  *                                         - body
+ * @param {object} [options]
+ * @param {string[]} [options.formats]
  * @returns {Function}
  */
 
-function skema (schemaKeyedByTarget) {
-  const ajv = new Ajv()
+function skema (schemaKeyedByTarget, options = {}) {
+  const ajv = new Ajv({
+    removeAdditional: true
+  })
+
+  if (options.formats?.length) {
+    addFormats(ajv, options.formats)
+  }
 
   const validators = Object.create(null)
 
@@ -27,6 +37,7 @@ function skema (schemaKeyedByTarget) {
     validators[target] = ajv.compile(schemaKeyedByTarget[target])
   }
 
+  skema._ajv = ajv
   skema._validators = validators
 
   return skema

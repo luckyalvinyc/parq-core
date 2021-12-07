@@ -31,10 +31,6 @@ afterAll(async () => {
   await sql.end()
 })
 
-it('TABLE_NAME', () => {
-  expect(store.TABLE_NAME).toBe('entry_points')
-})
-
 describe('@bulkCreate', () => {
   it('should create entry points from the provided labels', async () => {
     const entryPoints = await store.bulkCreate(1, ['a', 'b'])

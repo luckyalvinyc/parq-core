@@ -31,10 +31,6 @@ afterAll(async () => {
   await sql.end()
 })
 
-it('TABLE_NAME', () => {
-  expect(store.TABLE_NAME).toBe('tickets')
-})
-
 describe('@create', () => {
   beforeEach(async () => {
     const slot = {

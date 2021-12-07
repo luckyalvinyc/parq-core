@@ -34,29 +34,35 @@ afterAll(async () => {
   await sql.end()
 })
 
-it('TABLE_NAME', () => {
-  expect(store.TABLE_NAME).toBe('slots')
-})
+describe('TYPES', () => {
+  it('properties', () => {
+    expect(TYPES).toEqual({
+      byLabel: {
+        small: 'small',
+        medium: 'medium',
+        large: 'large'
+      },
+      byValue: {
+        small: 0,
+        medium: 1,
+        large: 2
+      },
+      labels: [
+        'small',
+        'medium',
+        'large'
+      ],
+      to: expect.any(Function),
+      from: expect.any(Function)
+    })
+  })
 
-it('TYPES', () => {
-  expect(store.TYPES).toEqual({
-    byLabel: {
-      small: 'small',
-      medium: 'medium',
-      large: 'large'
-    },
-    byValue: {
-      small: 0,
-      medium: 1,
-      large: 2
-    },
-    labels: [
-      'small',
-      'medium',
-      'large'
-    ],
-    to: expect.any(Function),
-    from: expect.any(Function)
+  describe('@to', () => {
+    it('should throw an error if the given type is not recognized', () => {
+      expect(() => {
+        TYPES.to('3ple')
+      }).toThrow(/3ple/)
+    })
   })
 })
 

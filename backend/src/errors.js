@@ -22,10 +22,11 @@ function createHttpStatusErrors (httpStatuses) {
   const errors = {}
 
   for (const { statusCode, name } of httpStatuses) {
-    const typeOfError = snakeToCamelCase(name)
+    const method = snakeToCamelCase(name)
 
-    errors[typeOfError] = function (message, data) {
+    errors[method] = function (message, data) {
       const error = new Error(message ?? name)
+      error.type = name
       error.statusCode = statusCode
 
       if (data) {

@@ -53,6 +53,22 @@ it('should return a function', () => {
   expect(middleware).toBeInstanceOf(Function)
 })
 
+it('should add formats if `formats` option is provided', async () => {
+  jest.unstable_mockModule('ajv-formats', () => ({
+    default: jest.fn()
+  }))
+
+  const { default: addFormats } = await import('ajv-formats')
+  const { default: skema } = await import('./skema.js')
+
+  const middleware = skema(schemaKeyedByTarget, {
+    formats: ['uri']
+  })
+
+  expect(addFormats).toHaveBeenCalledTimes(1)
+  expect(addFormats).toHaveBeenCalledWith(middleware._ajv, ['uri'])
+})
+
 it('should skip unknown targets', () => {
   const middleware = skema({
     a: { }
