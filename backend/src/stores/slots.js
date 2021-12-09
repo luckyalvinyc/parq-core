@@ -61,7 +61,7 @@ export async function findNearestAvailableSlot (entryPoint, type) {
       id,
       type,
       available,
-      md5(${TABLE_NAME}::text)
+      md5(${sql(TABLE_NAME)}::text)
     FROM
       ${sql(TABLE_NAME)}
     WHERE
@@ -69,7 +69,8 @@ export async function findNearestAvailableSlot (entryPoint, type) {
       type >= ${typeInInt} AND
       available = true
     ORDER BY
-      distance->>${entryPointId} ASC
+      distance->>${entryPointId} ASC,
+      TYPE ASC
     LIMIT 1;
   `
 
@@ -178,6 +179,16 @@ export async function includeNewEntryPoint (entryPoint, options = {}) {
 
   return result.count > 0
 }
+
+/**
+ * Converts the given slot to a DB compatible object
+ *
+ * @param {object} slot
+ * @param {number} slot.spaceId
+ * @param {string} slot.type
+ * @param {Record<string, number>} slot.distance
+ * @param {boolean} [slot.available]
+ */
 
 export function build (slot) {
   const {

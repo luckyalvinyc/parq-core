@@ -61,7 +61,8 @@ export async function incrementEntryPoints (spaceId, options = {}) {
     UPDATE
       ${sql(TABLE_NAME)}
     SET
-      entry_points = entry_points + 1
+      entry_points = entry_points + 1,
+      updated_at = CURRENT_TIMESTAMP
     WHERE
       id = ${spaceId};
   `

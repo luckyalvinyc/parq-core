@@ -1,12 +1,12 @@
 import sql from '../pg.js'
 import errors from '../errors.js'
-import * as stores from '../stores/index.js'
+import * as stores from '#stores'
 
 /**
  * Creates a parking space with the specified number of entry points
  *
- *  @param {number} numberOfEntryPoints
- *  @returns {Promise<object[]>}
+ * @param {number} numberOfEntryPoints
+ * @returns {Promise<object[]>}
  */
 
 export async function createSpace (numberOfEntryPoints) {
@@ -43,6 +43,8 @@ function createLabels (numberOfEntryPoints) {
  *
  * @param {number} spaceId
  * @param {object[]} slots
+ * @param {string} slots[].type
+ * @param {Record<string, number>} slots[].distance
  */
 
 export async function addSlots (spaceId, slots) {
@@ -54,7 +56,84 @@ export async function addSlots (spaceId, slots) {
     })
   }
 
-  return stores.slots.bulkCreate(spaceId, slots)
+  const defaultDistance = await stores.entryPoints.buildDistanceById(spaceId)
+
+  const slotsWithDefaultDistance = withDefaultDistance(slots, defaultDistance)
+
+  if (!slotsWithDefaultDistance.length) {
+    throw errors.badRequest('invalid_entry_id')
+  }
+
+  return stores.slots.bulkCreate(spaceId, slotsWithDefaultDistance)
+}
+
+/**
+ * Adds the missing entry point for a distance in a slot
+ *
+ * @param {object[]} slots
+ * @param {string} slots[].type
+ * @param {Record<string, number>} slots[].distance
+ * @param {Record<string, number>} defaultDistance
+ */
+
+function withDefaultDistance (slots, defaultDistance) {
+  const slotsWithDefaultDistance = []
+
+  for (const slot of slots) {
+    const slotWithDefaultDistance = {
+      type: slot.type
+    }
+
+    const sanitizedDistance = sanitize(defaultDistance, slot.distance)
+
+    if (!sanitizedDistance) {
+      continue
+    }
+
+    slotWithDefaultDistance.distance = sanitizedDistance
+    slotsWithDefaultDistance.push(slotWithDefaultDistance)
+  }
+
+  return slotsWithDefaultDistance
+}
+
+/**
+ * Checks if a `distance` contains an unknown entry point ID
+ *  if it does, it will be removed from the `distance`
+ *
+ * @param {Record<string, number>} defaultDistance
+ * @param {Record<string, number>} distance
+ */
+
+function sanitize (defaultDistance, distance) {
+  let hasKey = false
+
+  const sanitized = Object.create(null)
+  const entryIds = Object.keys(distance)
+
+  for (const entryId of entryIds) {
+    if (!defaultDistance[entryId]) {
+      continue
+    }
+
+    sanitized[entryId] = distance[entryId]
+
+    hasKey = true
+  }
+
+  if (!hasKey) {
+    return
+  }
+
+  for (const entryId of Object.keys(defaultDistance)) {
+    if (sanitized[entryId]) {
+      continue
+    }
+
+    sanitized[entryId] = 1
+  }
+
+  return sanitized
 }
 
 /**
@@ -62,7 +141,6 @@ export async function addSlots (spaceId, slots) {
  *
  * @param {number} spaceId
  * @param {string} label
- * @returns {Promise<object>}
  */
 
 export async function addEntryPoint (spaceId, label) {

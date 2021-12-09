@@ -6,6 +6,8 @@ const {
   SERVER_HOST = 'localhost',
   SERVER_PORT = '3000',
 
+  INITIAL_HOURS = '3',
+
   FLAT_RATE = '40',
   FULL_DAY_RATE = '5000',
 
@@ -21,12 +23,15 @@ const {
 } = env
 
 export default {
+  isDev: NODE_ENV === 'development',
   isTest: NODE_ENV === 'test',
 
   server: {
     host: SERVER_HOST,
     port: parseInt(SERVER_PORT, 10)
   },
+
+  initialHours: parseInt(INITIAL_HOURS),
 
   rates: {
     flat: Number(FLAT_RATE),

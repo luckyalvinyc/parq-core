@@ -52,7 +52,33 @@ export async function findById (ticketId) {
       id = ${ticketId};
   `
 
+  if (!row) {
+    return null
+  }
+
   return toTicket(row)
+}
+
+/**
+ * Checks if the provided `vehicleId` have ticket that is still not paid
+ *
+ * @param {string} vehicleId
+ * @returns {Promise<boolean>}
+ */
+
+export async function checkForUnpaidTicket (vehicleId) {
+  const [row] = await sql`
+    SELECT
+      id
+    FROM
+      ${sql(TABLE_NAME)}
+    WHERE
+      vehicle_id = ${vehicleId} AND
+      paid = false
+    LIMIT 1;
+  `
+
+  return row !== undefined
 }
 
 /**
@@ -62,7 +88,7 @@ export async function findById (ticketId) {
  * @param {number} amount
  * @param {object} [options]
  * @param {object} [options.txn]
- * @returns {Promise<ReturnType<toTicket>>}
+ * @returns {Promise<ReturnType<toTicket>?>}
  */
 
 export async function pay (ticketId, amount, options = {}) {
@@ -74,12 +100,16 @@ export async function pay (ticketId, amount, options = {}) {
     SET
       amount = ${amount},
       paid = true,
-      ended_at = CURRENT_TIMESTAMP
+      updated_at = CURRENT_TIMESTAMP
     WHERE
       id = ${ticketId}
     RETURNING
       ${sql(columnsForPaid())};
   `
+
+  if (!row) {
+    return null
+  }
 
   return toTicket(row)
 }
@@ -91,20 +121,37 @@ function baseColumns () {
     'vehicle_id',
     'rate',
     'paid',
-    'started_at'
+    'created_at'
   ]
 }
 
 function columnsForPaid () {
   return baseColumns().concat([
     'amount',
-    'ended_at'
+    'updated_at'
   ])
 }
 
-export function build (ticket) {
-  return {
+/**
+ * Converts the given ticket to a DB compatible object
+ *
+ * @param {object} ticket
+ * @param {number} ticket.slotId
+ * @param {string} ticket.vehicleId
+ * @param {number} ticket.rate
+ */
 
+export function build (ticket) {
+  const {
+    slotId,
+    vehicleId,
+    rate
+  } = ticket
+
+  return {
+    slot_id: slotId,
+    vehicle_id: vehicleId,
+    rate
   }
 }
 
@@ -118,8 +165,8 @@ export function build (ticket) {
  * @param {number} row.rate
  * @param {boolean} row.paid
  * @param {number} [row.amount]
- * @param {Date} row.started_at
- * @param {Date} [row.ended_at]
+ * @param {Date} row.created_at
+ * @param {Date} [row.updated_at]
  * @private
  */
 
@@ -130,15 +177,15 @@ function toTicket (row) {
     vehicleId: row.vehicle_id,
     rate: Number(row.rate),
     paid: row.paid,
-    startedAt: row.started_at
+    startedAt: row.created_at
   }
 
   if (row.amount) {
     ticket.amount = Number(row.amount)
   }
 
-  if (row.ended_at) {
-    ticket.endedAt = row.ended_at
+  if (row.updated_at) {
+    ticket.endedAt = row.updated_at
   }
 
   return ticket

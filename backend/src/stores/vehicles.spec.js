@@ -57,7 +57,7 @@ describe('@create', () => {
     })
   })
 
-  it('should return the updated vehicle if the same plate number is provided', async () => {
+  it('should return the original record based on the provided `plateNumber`', async () => {
     await store.create({
       plateNumber: 'a',
       type: 'small'
@@ -70,7 +70,7 @@ describe('@create', () => {
 
     expect(vehicle).toStrictEqual({
       id: 'a',
-      type: 'medium'
+      type: 'small'
     })
   })
 })
@@ -78,10 +78,13 @@ describe('@create', () => {
 describe('@findById', () => {
   const vehicleId = 'a'
 
+  const lastVisitedAt = new Date()
+
   beforeEach(async () => {
     const vehicle = store.build({
       plateNumber: vehicleId,
-      type: 'small'
+      type: 'small',
+      lastVisitedAt
     })
 
     await sql`
@@ -95,7 +98,8 @@ describe('@findById', () => {
 
     expect(vehicle).toStrictEqual({
       id: 'a',
-      type: 'small'
+      type: 'small',
+      lastVisitedAt
     })
   })
 
@@ -126,7 +130,7 @@ describe('@updateLastVisit', () => {
 
     ;[row] = await sql`
       SELECT
-        last_visited_at AS "lastVisitedAt"
+        updated_at AS "lastVisitedAt"
       FROM
         ${sql(store.TABLE_NAME)}
       WHERE
@@ -141,7 +145,7 @@ describe('@updateLastVisit', () => {
 
     ;[row] = await sql`
       SELECT
-        last_visited_at AS "lastVisitedAt"
+        updated_at AS "lastVisitedAt"
       FROM
         ${sql(store.TABLE_NAME)}
       WHERE
@@ -157,4 +161,3 @@ describe('@updateLastVisit', () => {
     expect(isUpdated).toBe(false)
   })
 })
-

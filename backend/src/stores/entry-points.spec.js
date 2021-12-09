@@ -1,6 +1,7 @@
 import { jest } from '@jest/globals'
 
 import * as utils from '../../tests/utils.js'
+import { valuesForInsert } from './utils.js'
 
 /**
  * @type {import('./entry-points.js')}
@@ -61,19 +62,10 @@ describe('@bulkCreate', () => {
 
 describe('@findById', () => {
   beforeEach(async () => {
-    const rowsToBeInserted = [{
-      id: 1,
-      space_id: 1,
-      label: 'a'
-    }]
-
-    await sql`
-      INSERT INTO
-        ${sql(store.TABLE_NAME)} ${sql(rowsToBeInserted, 'space_id', 'label')}
-    `
+    await setupPerDescribe()
   })
 
-  it('should return the entry point for a given id', async () => {
+  it('should return the entry point from the provided `entryPointId`', async () => {
     const entryPoint = await store.findById(1)
 
     expect(entryPoint).toStrictEqual({
@@ -89,3 +81,50 @@ describe('@findById', () => {
     expect(entryPoint).toBe(null)
   })
 })
+
+describe('@buildDistanceById', () => {
+  beforeEach(async () => {
+    await setupPerDescribe([
+      store.build({
+        spaceId: 1,
+        label: 'b'
+      }),
+      store.build({
+        spaceId: 1,
+        label: 'c'
+      })
+    ])
+  })
+
+  it('should return the default distance for a space with entry point ID as their keys', async () => {
+    const distance = await store.buildDistanceById(1)
+
+    expect(distance).toStrictEqual({
+      1: 1,
+      2: 1,
+      3: 1
+    })
+  })
+
+  it('should return null the provided `spaceId` does not exists', async () => {
+    const distance = await store.buildDistanceById(2)
+
+    expect(distance).toBe(null)
+  })
+})
+
+async function setupPerDescribe (additional = []) {
+  const rowsToBeInserted = [
+    store.build({
+      spaceId: 1,
+      label: 'a'
+    })
+  ]
+
+  rowsToBeInserted.push(...additional)
+
+  await sql`
+    INSERT INTO
+      ${sql(store.TABLE_NAME)} ${valuesForInsert(sql, rowsToBeInserted)}
+  `
+}

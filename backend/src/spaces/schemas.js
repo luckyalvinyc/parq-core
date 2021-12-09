@@ -1,3 +1,5 @@
+import { types } from '../types.js'
+
 export const create = {
   body: {
     type: 'object',
@@ -24,11 +26,7 @@ export const update = {
           type: 'object',
           properties: {
             type: {
-              enum: [
-                'small',
-                'medium',
-                'large'
-              ]
+              enum: types.labels
             },
             distance: {
               type: 'object',

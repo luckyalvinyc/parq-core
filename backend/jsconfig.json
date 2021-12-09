@@ -1,6 +1,12 @@
 {
   "compilerOptions": {
-    "strictNullChecks": true
+    "baseUrl": "./",
+    "strict": true,
+    "strictNullChecks": true,
+    "paths": {
+      "#config": ["./config.js"],
+      "#stores": ["./src/stores/index.js"]
+    }
   },
   "exclude": ["node_modules"]
 }

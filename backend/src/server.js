@@ -6,7 +6,7 @@ import * as parse from '@polka/parse'
 import { fdir } from 'fdir'
 
 import helpers from './middlewares/helpers.js'
-import { logger } from '../lib/logger.js'
+import { logger } from './logger.js'
 
 /**
  * Starts the server

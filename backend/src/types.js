@@ -1,5 +1,9 @@
 export const types = createTypes()
 
+/**
+ * This is a shared types for both vehicles and slots
+ *  once the types will deviate, this also needs to be separated
+ */
 function createTypes () {
   const valueByType = {
     small: 0,
@@ -14,11 +18,11 @@ function createTypes () {
   }
 
   return {
-    byLabel: createBy('label'),
-    byValue: createBy('value'),
     labels: Object.keys(valueByType),
 
     /**
+     * Converts the provided `type` to its integer value
+     *
      * @param {string} type
      * @returns {number}
      */
@@ -33,23 +37,19 @@ function createTypes () {
     },
 
     /**
+     * Converts the provided `value` to its string value
+     *
      * @param {number} value
      * @returns {string}
      */
     from (value) {
-      return typeByValue[value]
+      const type = typeByValue[value]
+
+      if (type === undefined) {
+        throw new Error(`Value of: ${value} is not recognized`)
+      }
+
+      return type
     }
-  }
-
-  function createBy (type) {
-    const container = Object.create(null)
-
-    for (const label of Object.keys(valueByType)) {
-      container[label] = type === 'value'
-        ? valueByType[label]
-        : label
-    }
-
-    return container
   }
 }

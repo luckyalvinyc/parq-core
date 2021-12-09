@@ -1,6 +1,5 @@
 import { jest } from '@jest/globals'
 
-// dependencies
 let stores
 
 describe('@createSpace', () => {
@@ -64,6 +63,14 @@ describe('@addSlots', () => {
         exists: jest.fn().mockResolvedValue(true)
       },
 
+      entryPoints: {
+        buildDistanceById: jest.fn().mockResolvedValue({
+          1: 1,
+          2: 1,
+          3: 1
+        })
+      },
+
       slots: {
         bulkCreate: jest.fn().mockResolvedValue([{
           id: 1,
@@ -84,6 +91,9 @@ describe('@addSlots', () => {
 
     expect(stores.spaces.exists).toHaveBeenCalledTimes(1)
     expect(stores.spaces.exists).toHaveBeenCalledWith(1)
+
+    expect(stores.entryPoints.buildDistanceById).toHaveBeenCalledTimes(1)
+    expect(stores.entryPoints.buildDistanceById).toHaveBeenCalledWith(1)
 
     expect(stores.slots.bulkCreate).toHaveBeenCalledTimes(1)
     expect(stores.slots.bulkCreate).toHaveBeenCalledWith(1, slots)
@@ -111,6 +121,26 @@ describe('@addSlots', () => {
     expect(error.data).toStrictEqual({
       id: 1
     })
+  })
+
+  it('should throw an error if the entry point ID provided in `distance` does not exists', async () => {
+    const slots = [{
+      type: 'small',
+      distance: {
+        4: 1
+      }
+    }]
+
+    let error
+
+    try {
+      await addSlots(spaceId, slots)
+    } catch (err) {
+      error = err
+    }
+
+    expect(error.type).toBe('bad_request')
+    expect(error.message).toBe('invalid_entry_id')
   })
 })
 

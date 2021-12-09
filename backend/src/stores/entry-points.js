@@ -14,10 +14,10 @@ export const TABLE_NAME = 'entry_points'
  */
 
 export async function create (spaceId, label, options = {}) {
-  const [row] = await _create({
-    space_id: spaceId,
+  const [row] = await _create(build({
+    spaceId,
     label
-  }, options.txn)
+  }), options.txn)
 
   return toEntryPoint(row)
 }
@@ -48,7 +48,7 @@ export async function bulkCreate (spaceId, labels) {
 /**
  * Query for inserting rows to the `slots` table
  *
- * @param {object|object[]} rows
+ * @param {object[]|object} rows
  * @param {object} [txn]
  */
 
@@ -89,6 +89,46 @@ export async function findById (entryPointId) {
   }
 
   return toEntryPoint(row)
+}
+
+/**
+ * Builds an object where the keys are the entry IDs and the value is `1`
+ *
+ * @param {number} spaceId
+ * @returns {Promise<Record<string, number>?>}
+ */
+
+export async function buildDistanceById (spaceId) {
+  const [row] = await sql`
+    SELECT
+      jsonb_object_agg(id, 1) AS distance
+    FROM
+      ${sql(TABLE_NAME)}
+    WHERE
+      space_id = ${spaceId}
+  `
+
+  return row.distance
+}
+
+/**
+ * Converts the given entry point to a DB compatible object
+ *
+ * @param {object} entryPoint
+ * @param {number} entryPoint.spaceId
+ * @param {string} entryPoint.label
+ */
+
+export function build (entryPoint) {
+  const {
+    spaceId,
+    label
+  } = entryPoint
+
+  return {
+    space_id: spaceId,
+    label
+  }
 }
 
 /**

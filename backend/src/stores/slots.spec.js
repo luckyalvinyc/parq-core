@@ -78,7 +78,7 @@ describe('@findNearestAvailableSlot', () => {
           [entryPointId1]: 0.10,
           [entryPointId2]: 0.5,
           [entryPointId3]: 0.3
-        },
+        }
       }),
       store.build({
         spaceId,
@@ -87,7 +87,7 @@ describe('@findNearestAvailableSlot', () => {
           [entryPointId1]: 0.01,
           [entryPointId2]: 1,
           [entryPointId3]: 0.05
-        },
+        }
       }),
       store.build({
         spaceId,

@@ -1,23 +1,20 @@
-import Randexp from 'randexp'
-
 import sql from '../pg.js'
 import errors from '../errors.js'
-import config from '../../config.js'
-import * as stores from '../stores/index.js'
+import config from '#config'
+import * as stores from '#stores'
 import * as strategies from './strategies.js'
 import { ONE_DAY_IN_HR, ONE_HOUR_IN_MS } from './constants.js'
-
-const { randexp } = Randexp
 
 /**
  * Issues a ticket from a given entry point for a vehicle type
  *
  * @param {number} entryPointId
- * @param {string} vehicleType
- * @returns {Promise<object>}
+ * @param {object} vehicle
+ * @param {string} vehicle.plateNumber
+ * @param {string} vehicle.type
  */
 
-export async function issueTicket (entryPointId, vehicleType) {
+export async function issueTicket (entryPointId, vehicle) {
   const entryPoint = await stores.entryPoints.findById(entryPointId)
 
   if (!entryPoint) {
@@ -26,19 +23,25 @@ export async function issueTicket (entryPointId, vehicleType) {
     })
   }
 
-  const vehicle = await stores.vehicles.create({
-    plateNumber: randexp(/[A-Z]{3} [0-9]{4}/),
-    type: vehicleType
+  const createdVehicle = await stores.vehicles.create({
+    plateNumber: vehicle.plateNumber,
+    type: vehicle.type
   })
 
-  const slot = await stores.slots.findNearestAvailableSlot(entryPoint, vehicleType)
+  const hasUnpaidTicket = await stores.tickets.checkForUnpaidTicket(createdVehicle.id)
+
+  if (hasUnpaidTicket) {
+    throw errors.badRequest('already_parked')
+  }
+
+  const slot = await stores.slots.findNearestAvailableSlot(entryPoint, createdVehicle.type)
 
   if (!slot) {
     throw errors.badRequest('no_available_slots')
   }
 
   return sql.begin(async sql => {
-    const ticket = await stores.tickets.create(slot, vehicle.id, {
+    const ticket = await stores.tickets.create(slot, createdVehicle.id, {
       txn: sql
     })
 
@@ -51,21 +54,28 @@ export async function issueTicket (entryPointId, vehicleType) {
       throw errors.badRequest('no_available_slots')
     }
 
-    return ticket
+    return {
+      id: ticket.id,
+      slotId: ticket.slotId,
+      type: slot.type,
+      rate: ticket.rate,
+      startedAt: ticket.startedAt
+    }
   })
 }
 
 /**
- * Pays the total amount that is associated to a ticket
+ * Pays the amount that is associated to a ticket
  *
  * Once the ticket has been paid, the slot
  *  will be available for other vehicles to park
  *
  * @param {number} ticketId
- * @returns {Promise<object>}
+ * @param {object} [options]
+ * @param {Date} [options.endAt]
  */
 
-export async function pay (ticketId) {
+export async function payTicket (ticketId, options = {}) {
   const ticket = await stores.tickets.findById(ticketId)
 
   if (!ticket) {
@@ -90,7 +100,7 @@ export async function pay (ticketId) {
 
   const flatRate = computeFlatRate(vehicle.lastVisitedAt)
 
-  const amountToPay = computeAmountToPay(ticket, flatRate, strategies)
+  const amountToPay = computeAmountToPay(ticket, flatRate, strategies, options.endAt)
 
   return sql.begin(async sql => {
     const paidTicket = await stores.tickets.pay(ticket.id, amountToPay, {
@@ -120,14 +130,18 @@ export async function pay (ticketId) {
 /**
  * Computes the flat rate depending when the vehicle last visited
  *
- * @param {Date} lastVisitAt
+ * @param {Date} [lastVisitedAt]
  * @param {number} [gracePeriodInHours]
  * @param {number} [defaultFlatRate]
  * @returns {number}
  */
 
-function computeFlatRate (lastVisitAt, gracePeriodInHours = 1, defaultFlatRate = config.rates.flat) {
-  const timeSpentAway = diffInHours(new Date(), lastVisitAt, Math.round)
+function computeFlatRate (lastVisitedAt, gracePeriodInHours = 1, defaultFlatRate = config.rates.flat) {
+  if (!lastVisitedAt) {
+    return defaultFlatRate
+  }
+
+  const timeSpentAway = diffInHours(new Date(), lastVisitedAt, Math.round)
 
   return timeSpentAway <= gracePeriodInHours
     ? 0
@@ -145,16 +159,17 @@ function computeFlatRate (lastVisitAt, gracePeriodInHours = 1, defaultFlatRate =
  * @param {Date} ticket.startedAt
  * @param {number} flatRate
  * @param {object} strategies
+ * @param {Date} [endAt]
  * @returns {number}
  */
 
-function computeAmountToPay (ticket, flatRate, strategies) {
+function computeAmountToPay (ticket, flatRate, strategies, endAt = new Date()) {
   const {
     rate,
     startedAt
   } = ticket
 
-  const hours = diffInHours(new Date(), startedAt)
+  const hours = diffInHours(endAt, startedAt)
 
   const strategy = hours >= ONE_DAY_IN_HR
     ? 'overnight'

@@ -22,7 +22,7 @@ export async function create (vehicle) {
     ON CONFLICT
       (id)
     DO UPDATE SET
-      type = ${rowToBeInserted.type}
+      created_at = CURRENT_TIMESTAMP
     RETURNING
       id,
       type;
@@ -43,7 +43,7 @@ export async function findById (vehicleId) {
     SELECT
       id,
       type,
-      last_visited_at
+      updated_at
     FROM
       ${sql(TABLE_NAME)}
     WHERE
@@ -58,7 +58,7 @@ export async function findById (vehicleId) {
 }
 
 /**
- * Updates the `last_visited_at` column to the current date
+ * Updates the `updated_at` column to the current date
  *
  * @param {string} vehicleId
  * @param {object} [options]
@@ -73,7 +73,7 @@ export async function updateLastVisit (vehicleId, options = {}) {
     UPDATE
       ${sql(TABLE_NAME)}
     SET
-      last_visited_at = CURRENT_TIMESTAMP
+      updated_at = CURRENT_TIMESTAMP
     WHERE
       id = ${vehicleId};
   `
@@ -87,18 +87,26 @@ export async function updateLastVisit (vehicleId, options = {}) {
  * @param {object} vehicle
  * @param {string} vehicle.plateNumber
  * @param {string} vehicle.type
+ * @param {Date} [vehicle.lastVisitedAt]
  */
 
 export function build (vehicle) {
   const {
     plateNumber,
-    type
+    type,
+    lastVisitedAt
   } = vehicle
 
-  return {
+  const row = {
     id: plateNumber,
     type: types.to(type)
   }
+
+  if (vehicle.lastVisitedAt) {
+    row.updated_at = vehicle.lastVisitedAt
+  }
+
+  return row
 }
 
 /**
@@ -107,7 +115,7 @@ export function build (vehicle) {
  * @param {object} row
  * @param {string} row.id
  * @param {number} row.type
- * @param {Date} [row.last_visited_at]
+ * @param {Date} [row.updated_at]
  */
 
 function toVehicle (row) {
@@ -116,8 +124,8 @@ function toVehicle (row) {
     type: types.from(row.type)
   }
 
-  if (row.last_visited_at) {
-    vehicle.lastVisitedAt = row.last_visited_at
+  if (row.updated_at) {
+    vehicle.lastVisitedAt = row.updated_at
   }
 
   return vehicle

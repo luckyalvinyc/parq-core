@@ -5,8 +5,8 @@
   "main": "app.js",
   "type": "module",
   "scripts": {
+    "dev": "nodemand app.js",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
-    "db:init": "npm run db:create && npm run db:migrate",
     "db:create": "node scripts/cli.js create",
     "db:migrate": "ley up"
   },
@@ -17,6 +17,8 @@
     "node": ">=14.0.0"
   },
   "imports": {
+    "#config": "./config.js",
+    "#stores": "./src/stores/index.js",
     "#tests/*.js": "./tests/*.js"
   },
   "dependencies": {
@@ -29,13 +31,14 @@
     "pino": "^7.5.1",
     "polka": "^1.0.0-next.22",
     "postgres": "^2.0.0-beta.11",
-    "prexit": "^1.0.0",
-    "randexp": "^0.5.3"
+    "prexit": "^1.0.0"
   },
   "devDependencies": {
     "jest": "^27.4.3",
     "jest-environment-node": "^27.4.2",
     "ley": "^0.7.1",
-    "pgtools": "^0.3.2"
+    "nodemand": "^0.1.11",
+    "pgtools": "^0.3.2",
+    "pino-pretty": "^7.2.0"
   }
 }
