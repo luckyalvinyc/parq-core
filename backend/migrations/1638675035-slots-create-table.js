@@ -9,7 +9,7 @@ export async function up (sql) {
       type       smallint NOT NULL,
       available  boolean DEFAULT true NOT NULL,
       created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-      updated_at timestamp
+      updated_at timestamp DEFAULT NULL
     )
   `
 }
