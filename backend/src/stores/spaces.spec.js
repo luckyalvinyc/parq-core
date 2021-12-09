@@ -82,7 +82,7 @@ describe('@incrementEntryPoints', () => {
     let row
 
     // query before increase
-    ;[ row ] = await sql`
+    ;[row] = await sql`
       SELECT
         entry_points
       FROM
@@ -95,7 +95,7 @@ describe('@incrementEntryPoints', () => {
 
     await store.incrementEntryPoints(spaceId)
 
-    ;[ row ] = await sql`
+    ;[row] = await sql`
       SELECT
         entry_points
       FROM

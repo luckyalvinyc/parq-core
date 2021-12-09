@@ -13,3 +13,4 @@ services:
 
 volumes:
   postgres-data:
+    name: pg_data_parq_core

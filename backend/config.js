@@ -6,6 +6,9 @@ const {
   SERVER_HOST = 'localhost',
   SERVER_PORT = '3000',
 
+  FLAT_RATE = '40',
+  FULL_DAY_RATE = '5000',
+
   SMALL_RATE = '20',
   MEDIUM_RATE = '60',
   LARGE_RATE = '100',
@@ -14,7 +17,7 @@ const {
   POSTGRES_PORT = '5432',
   POSTGRES_DATABASE = 'parq_core',
   POSTGRES_USERNAME = 'postgres',
-  POSTGRES_PASSWORD = 'postgres',
+  POSTGRES_PASSWORD = 'postgres'
 } = env
 
 export default {
@@ -26,9 +29,14 @@ export default {
   },
 
   rates: {
-    small: Number(SMALL_RATE),
-    medium: Number(MEDIUM_RATE),
-    large: Number(LARGE_RATE)
+    flat: Number(FLAT_RATE),
+    fullDay: Number(FULL_DAY_RATE),
+
+    perHour: {
+      small: Number(SMALL_RATE),
+      medium: Number(MEDIUM_RATE),
+      large: Number(LARGE_RATE)
+    }
   },
 
   postgres: {

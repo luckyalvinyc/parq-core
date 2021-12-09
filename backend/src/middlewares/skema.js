@@ -53,7 +53,7 @@ function skema (schemaKeyedByTarget, options = {}) {
       const isValid = validator(req[target])
 
       if (!isValid) {
-        return next(errors.badRequest('validation'))
+        return next(errors.badRequest('validation', validator.errors[0]))
       }
     }
 

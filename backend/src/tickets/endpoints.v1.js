@@ -17,7 +17,7 @@ route.post('/', skema(schemas.create), create)
  * Handles requests for creating tickets for each vehicle type
  */
 
-export async function create (req, res) {
+async function create (req, res) {
   const {
     entryPointId,
     vehicleType
@@ -29,8 +29,24 @@ export async function create (req, res) {
     data: {
       ticket: {
         id: ticket.id,
+        rate: ticket.rate,
         startedAt: ticket.startedAt
       }
+    }
+  })
+}
+
+route.post('/:ticketId',
+  skema(schemas.update, schemas.options), update)
+
+async function update (req, res) {
+  const { ticketId } = req.params
+
+  const ticket = await operations.pay(ticketId)
+
+  res.send({
+    data: {
+      ticket
     }
   })
 }

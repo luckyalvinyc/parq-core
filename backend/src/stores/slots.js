@@ -1,18 +1,17 @@
 import sql from '../pg.js'
-import { execute } from './utils.js'
+import { types } from '../types.js'
+import { valuesForInsert } from './utils.js'
 
 export const TABLE_NAME = 'slots'
-
-export const TYPES = Types()
 
 /**
  * Creates the provided slots, all slots will be available until occupied
  *
  * @param {number} spaceId
  * @param {object[]} slots
- * @param {number} slots[].type
+ * @param {string} slots[].type
  * @param {object} slots[].distance
- * @returns {Promise<object[]>}
+ * @returns {Promise<ReturnType<toSlot>[]>}
  */
 
 export async function bulkCreate (spaceId, slots) {
@@ -21,18 +20,18 @@ export async function bulkCreate (spaceId, slots) {
   for (const { type, distance } of slots) {
     rowsToBeInserted.push({
       space_id: spaceId,
-      type: TYPES.to(type),
+      type: types.to(type),
       distance: sql.json(distance)
     })
   }
 
   const rows = await sql`
     INSERT INTO
-      ${sql(TABLE_NAME)} ${sql(rowsToBeInserted, 'space_id', 'type', 'distance')}
+      ${sql(TABLE_NAME)} ${valuesForInsert(sql, rowsToBeInserted)}
     RETURNING
       id,
       type,
-      available
+      available;
   `
 
   return rows.map(toSlot)
@@ -46,26 +45,23 @@ export async function bulkCreate (spaceId, slots) {
  * @param {number} entryPoint.id
  * @param {number} entryPoint.spaceId
  * @param {string} type
- * @returns {Promise<object[]>}
+ * @returns {Promise<ReturnType<toSlot>?>}
  */
 
 export async function findNearestAvailableSlot (entryPoint, type) {
-  const columns = [
-    'id',
-    'type',
-    'available'
-  ]
-
-  const typeInInt = TYPES.to(type)
-
   const {
     id: entryPointId,
     spaceId
   } = entryPoint
 
-  const [ row ] = await sql`
+  const typeInInt = types.to(type)
+
+  const [row] = await sql`
     SELECT
-      ${sql(columns)}
+      id,
+      type,
+      available,
+      md5(${TABLE_NAME}::text)
     FROM
       ${sql(TABLE_NAME)}
     WHERE
@@ -74,7 +70,7 @@ export async function findNearestAvailableSlot (entryPoint, type) {
       available = true
     ORDER BY
       distance->>${entryPointId} ASC
-    LIMIT 1
+    LIMIT 1;
   `
 
   if (!row) {
@@ -90,11 +86,15 @@ export async function findNearestAvailableSlot (entryPoint, type) {
  * @param {number} slotId
  * @param {object} [options]
  * @param {object} [options.txn]
+ * @param {string} [options.hash]
  * @returns {Promise<boolean>}
  */
 
 export async function occupy (slotId, options = {}) {
-  const result = await updateAvailability(slotId, false, options.txn)
+  const result = await updateAvailability(slotId, false, {
+    txn: options.txn,
+    hash: options.hash
+  })
 
   return result.count === 1
 }
@@ -109,7 +109,9 @@ export async function occupy (slotId, options = {}) {
  */
 
 export async function vacant (slotId, options = {}) {
-  const result = await updateAvailability(slotId, true, options.txn)
+  const result = await updateAvailability(slotId, true, {
+    txn: options.txn
+  })
 
   return result.count === 1
 }
@@ -119,21 +121,29 @@ export async function vacant (slotId, options = {}) {
  *
  * @param {number} slotId
  * @param {boolean} available
- * @param {object} txn
+ * @param {object} options
+ * @param {object} options.txn
+ * @param {string} [options.hash]
  * @private
  */
 
-async function updateAvailability (slotId, available, txn) {
-  const sql = execute(txn)
+async function updateAvailability (slotId, available, options) {
+  const {
+    txn,
+    hash = null
+  } = options
 
-  return sql`
+  const sqlt = txn || sql
+
+  return sqlt`
     UPDATE
       ${sql(TABLE_NAME)}
     SET
       available = ${available},
       updated_at = CURRENT_TIMESTAMP
     WHERE
-      id = ${slotId}
+      id = ${slotId} AND
+      (${hash}::text IS NULL OR md5(${sql(TABLE_NAME)}::text) = ${hash});
   `
 }
 
@@ -147,68 +157,41 @@ async function updateAvailability (slotId, available, txn) {
  * @param {number} entryPoint.spaceId
  * @param {object} [options]
  * @param {object} [options.txn]
+ * @returns {Promise<boolean>}
  */
 
 export async function includeNewEntryPoint (entryPoint, options = {}) {
-  const sql = execute(options.txn)
+  const sqlt = options.txn || sql
 
-  const distanceForEntryPoint = sql.json({
+  const distanceForEntryPoint = sqlt.json({
     [entryPoint.id]: 1
   })
 
-  await sql`
+  const result = await sqlt`
     UPDATE
-      ${sql(TABLE_NAME)}
+      ${sqlt(TABLE_NAME)}
     SET
       distance = distance || ${distanceForEntryPoint}
     WHERE
-      space_id = ${entryPoint.spaceId}
+      space_id = ${entryPoint.spaceId};
   `
+
+  return result.count > 0
 }
 
-function Types () {
-  const valueByType = {
-    small: 0,
-    medium: 1,
-    large: 2
-  }
-
-  const typeByValue = {
-    0: 'small',
-    1: 'medium',
-    2: 'large'
-  }
+export function build (slot) {
+  const {
+    spaceId,
+    type,
+    distance,
+    available = true
+  } = slot
 
   return {
-    byLabel: createBy('label'),
-    byValue: createBy('value'),
-    labels: Object.keys(valueByType),
-
-    to (type) {
-      const value = valueByType[type]
-
-      if (value === undefined) {
-        throw new Error(`Type of: ${type} is not recognized`)
-      }
-
-      return value
-    },
-
-    from (value) {
-      return typeByValue[value]
-    }
-  }
-
-  function createBy (type) {
-    const container = Object.create(null)
-
-    for (const label of Object.keys(valueByType)) {
-      container[label] = type === 'value'
-        ? valueByType[label]
-        : label
-    }
-
-    return container
+    space_id: spaceId,
+    type: types.to(type),
+    distance: sql.json(distance),
+    available
   }
 }
 
@@ -216,13 +199,23 @@ function Types () {
  * Applies necessary transformation to a given row
  *
  * @param {object} row
+ * @param {number} row.id
+ * @param {number} row.type
+ * @param {boolean} row.available
+ * @param {string} [row.md5]
  * @private
  */
 
 function toSlot (row) {
-  return {
-    id: parseInt(row.id, 10),
-    type: TYPES.from(row.type),
+  const slot = {
+    id: row.id,
+    type: types.from(row.type),
     available: row.available
   }
+
+  if (row.md5) {
+    slot.hash = row.md5
+  }
+
+  return slot
 }

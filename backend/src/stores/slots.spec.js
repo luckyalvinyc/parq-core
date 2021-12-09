@@ -1,13 +1,12 @@
 import { jest } from '@jest/globals'
 
-import * as utils from '../../tests/utils.js'
+import * as utils from '#tests/utils.js'
+import { valuesForInsert } from '../stores/utils.js'
 
 /**
  * @type {import('./slots.js')}
  */
 let store
-
-let TYPES
 
 let sql
 
@@ -15,18 +14,17 @@ beforeAll(async () => {
   sql = utils.db.replace(jest, '../pg.js', db.name)
 
   store = await import('./slots.js')
-  TYPES = store.TYPES
 })
 
 beforeEach(async () => {
   await sql`
-    TRUNCATE TABLE slots RESTART IDENTITY CASCADE
+    TRUNCATE TABLE slots RESTART IDENTITY CASCADE;
   `
 
   await sql`
     INSERT INTO
       spaces (entry_points)
-    VALUES (3)
+    VALUES (3);
   `
 })
 
@@ -34,48 +32,16 @@ afterAll(async () => {
   await sql.end()
 })
 
-describe('TYPES', () => {
-  it('properties', () => {
-    expect(TYPES).toEqual({
-      byLabel: {
-        small: 'small',
-        medium: 'medium',
-        large: 'large'
-      },
-      byValue: {
-        small: 0,
-        medium: 1,
-        large: 2
-      },
-      labels: [
-        'small',
-        'medium',
-        'large'
-      ],
-      to: expect.any(Function),
-      from: expect.any(Function)
-    })
-  })
-
-  describe('@to', () => {
-    it('should throw an error if the given type is not recognized', () => {
-      expect(() => {
-        TYPES.to('3ple')
-      }).toThrow(/3ple/)
-    })
-  })
-})
-
 describe('@bulkCreate', () => {
   it('should create the provided slots', async () => {
     const rawSlots = [{
-      type: TYPES.byLabel.small,
+      type: 'small',
       distance: {
         1: 0,
         2: 1
       }
     }, {
-      type: TYPES.byLabel.medium,
+      type: 'medium',
       distance: {
         1: 1,
         2: 0
@@ -87,11 +53,11 @@ describe('@bulkCreate', () => {
     expect(slots.length).toBe(2)
     expect(slots).toEqual([{
       id: 1,
-      type: TYPES.byLabel.small,
+      type: 'small',
       available: true
     }, {
       id: 2,
-      type: TYPES.byLabel.medium,
+      type: 'medium',
       available: true
     }])
   })
@@ -104,38 +70,40 @@ describe('@findNearestAvailableSlot', () => {
   const entryPointId3 = 3
 
   beforeEach(async () => {
-    const slots = [{
-      space_id: spaceId,
-      type: TYPES.byValue.small,
-      distance: sql.json({
-        [entryPointId1]: 0.10,
-        [entryPointId2]: 0.5,
-        [entryPointId3]: 0.3
+    const slots = [
+      store.build({
+        spaceId,
+        type: 'small',
+        distance: {
+          [entryPointId1]: 0.10,
+          [entryPointId2]: 0.5,
+          [entryPointId3]: 0.3
+        },
       }),
-      available: true
-    }, {
-      space_id: spaceId,
-      type: TYPES.byValue.medium,
-      distance: sql.json({
-        [entryPointId1]: 0.01,
-        [entryPointId2]: 1,
-        [entryPointId3]: 0.05
+      store.build({
+        spaceId,
+        type: 'medium',
+        distance: {
+          [entryPointId1]: 0.01,
+          [entryPointId2]: 1,
+          [entryPointId3]: 0.05
+        },
       }),
-      available: true
-    }, {
-      space_id: spaceId,
-      type: TYPES.byValue.large,
-      distance: sql.json({
-        [entryPointId1]: 1,
-        [entryPointId2]: 0.20,
-        [entryPointId3]: 0.25
-      }),
-      available: false
-    }]
+      store.build({
+        spaceId,
+        type: 'large',
+        distance: {
+          [entryPointId1]: 1,
+          [entryPointId2]: 0.20,
+          [entryPointId3]: 0.25
+        },
+        available: false
+      })
+    ]
 
     await sql`
       INSERT INTO
-        ${sql(store.TABLE_NAME)} ${sql(slots, 'space_id', 'type', 'distance', 'available')}
+        ${sql(store.TABLE_NAME)} ${valuesForInsert(sql, slots)};
     `
   })
 
@@ -143,11 +111,19 @@ describe('@findNearestAvailableSlot', () => {
     const slot = await store.findNearestAvailableSlot({
       id: entryPointId1,
       spaceId
-    }, TYPES.byLabel.small)
+    }, 'small')
+
+    function isMD5 (string) {
+      return /^[a-f0-9]{32}$/.test(string)
+    }
+
+    expect(isMD5(slot.hash)).toBe(true)
+
+    delete slot.hash
 
     expect(slot).toStrictEqual({
       id: 2,
-      type: TYPES.byLabel.medium,
+      type: 'medium',
       available: true
     })
   })
@@ -156,7 +132,7 @@ describe('@findNearestAvailableSlot', () => {
     const slot = await store.findNearestAvailableSlot({
       id: entryPointId2,
       spaceId
-    }, TYPES.byLabel.large)
+    }, 'large')
 
     expect(slot).toBe(null)
   })
@@ -168,17 +144,17 @@ describe('@occupy', () => {
   beforeEach(async () => {
     slotId = 1
 
-    const slots = [{
-      space_id: 1,
-      type: TYPES.byValue.small,
-      distance: sql.json({
+    const slot = store.build({
+      spaceId: 1,
+      type: 'small',
+      distance: {
         1: 0
-      })
-    }]
+      }
+    })
 
     await sql`
       INSERT INTO
-        ${sql(store.TABLE_NAME)} ${sql(slots, 'space_id', 'type', 'distance')}
+        ${sql(store.TABLE_NAME)} ${valuesForInsert(sql, slot)};
     `
   })
 
@@ -187,7 +163,7 @@ describe('@occupy', () => {
 
     expect(isUpdated).toBe(true)
 
-    const [ slot ] = await sql`
+    const [slot] = await sql`
       SELECT
         id,
         available,
@@ -196,7 +172,7 @@ describe('@occupy', () => {
       FROM
         ${sql(store.TABLE_NAME)}
       WHERE
-        id = ${slotId}
+        id = ${slotId};
     `
 
     expect(slot.updatedAt.valueOf()).toBeGreaterThan(slot.createdAt.valueOf())
@@ -207,6 +183,49 @@ describe('@occupy', () => {
       id: 1,
       available: false
     })
+  })
+
+  it('should update if the hash provided match the current hash of the row', async () => {
+    const [row] = await sql`
+      SELECT
+        md5(${sql(store.TABLE_NAME)}::text) AS hash
+      FROM
+        ${sql(store.TABLE_NAME)}
+      WHERE
+        id = ${slotId};
+    `
+
+    const isUpdated = await store.occupy(slotId, {
+      hash: row.hash
+    })
+
+    expect(isUpdated).toBe(true)
+  })
+
+  it('should not update if the row has been updated from its original hash value', async () => {
+    const [row] = await sql`
+      SELECT
+        md5(${sql(store.TABLE_NAME)}::text) AS hash
+      FROM
+        ${sql(store.TABLE_NAME)}
+      WHERE
+        id = ${slotId};
+    `
+
+    await sql`
+      UPDATE
+        ${sql(store.TABLE_NAME)}
+      SET
+        available = false
+      WHERE
+        id = ${slotId};
+    `
+
+    const isUpdated = await store.occupy(slotId, {
+      hash: row.hash
+    })
+
+    expect(isUpdated).toBe(false)
   })
 
   it('should not update if the provided `slotId` does not exists', async () => {
@@ -234,13 +253,13 @@ describe('@occupy', () => {
     expect(error).toBeInstanceOf(Error)
     expect(error.message).toBe('test')
 
-    const [ slot ] = await sql`
+    const [slot] = await sql`
       SELECT
         available
       FROM
         ${sql(store.TABLE_NAME)}
       WHERE
-        id = ${slotId}
+        id = ${slotId};
     `
 
     expect(slot.available).toBe(true)
@@ -253,18 +272,18 @@ describe('@vacant', () => {
   beforeEach(async () => {
     slotId = 1
 
-    const slots = [{
-      space_id: 1,
-      type: TYPES.byValue.small,
-      distance: sql.json({
+    const slot = store.build({
+      spaceId: 1,
+      type: 'small',
+      distance: {
         1: 0
-      }),
+      },
       available: false
-    }]
+    })
 
     await sql`
       INSERT INTO
-        ${sql(store.TABLE_NAME)} ${sql(slots, 'space_id', 'type', 'distance', 'available')}
+        ${sql(store.TABLE_NAME)} ${valuesForInsert(sql, slot)};
     `
   })
 
@@ -273,7 +292,7 @@ describe('@vacant', () => {
 
     expect(isUpdated).toBe(true)
 
-    const [ slot ] = await sql`
+    const [slot] = await sql`
       SELECT
         id,
         available,
@@ -282,7 +301,7 @@ describe('@vacant', () => {
       FROM
         ${sql(store.TABLE_NAME)}
       WHERE
-        id = ${slotId}
+        id = ${slotId};
     `
 
     expect(slot.updatedAt.valueOf()).toBeGreaterThan(slot.createdAt.valueOf())
@@ -319,13 +338,13 @@ describe('@vacant', () => {
 
     expect(error).toBeInstanceOf(Error)
 
-    const [ slot ] = await sql`
+    const [slot] = await sql`
       SELECT
         available
       FROM
         ${sql(store.TABLE_NAME)}
       WHERE
-        id = ${slotId}
+        id = ${slotId};
     `
 
     expect(slot.available).toBe(false)
@@ -334,18 +353,18 @@ describe('@vacant', () => {
 
 describe('@includeNewEntryPoint', () => {
   beforeEach(async () => {
-    const slots = [{
-      space_id: 1,
-      type: TYPES.byValue.small,
-      distance: sql.json({
+    const slot = store.build({
+      spaceId: 1,
+      type: 'small',
+      distance: {
         1: 0
-      }),
+      },
       available: false
-    }]
+    })
 
     await sql`
       INSERT INTO
-        ${sql(store.TABLE_NAME)} ${sql(slots, 'space_id', 'type', 'distance', 'available')}
+        ${sql(store.TABLE_NAME)} ${valuesForInsert(sql, slot)};
     `
   })
 
@@ -355,13 +374,13 @@ describe('@includeNewEntryPoint', () => {
       spaceId: 1
     })
 
-    const [ row ] = await sql`
+    const [row] = await sql`
       SELECT
         *
       FROM
         slots
       WHERE
-        id = 1
+        id = 1;
     `
 
     expect(row.distance).toStrictEqual({
@@ -370,4 +389,3 @@ describe('@includeNewEntryPoint', () => {
     })
   })
 })
-

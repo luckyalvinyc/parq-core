@@ -20,4 +20,3 @@ export async function create (config) {
     console.log(`Database ${config.database} has already been created`)
   }
 }
-

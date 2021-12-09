@@ -20,3 +20,21 @@ export const create = {
     }
   }
 }
+
+export const update = {
+  body: {
+    type: 'object',
+    required: ['endAt'],
+    properties: {
+      endAt: {
+        type: 'string',
+        format: 'date-time'
+      }
+    }
+
+  }
+}
+
+export const options = {
+  formats: ['date-time']
+}

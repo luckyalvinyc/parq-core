@@ -1,6 +1,7 @@
 import { jest } from '@jest/globals'
 
-import * as utils from '../../tests/utils.js'
+import * as utils from '#tests/utils.js'
+import { valuesForInsert } from './utils.js'
 
 /**
  * @type {import('./tickets.js')}
@@ -27,13 +28,13 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   await sql`
-    TRUNCATE ${sql(store.TABLE_NAME)} RESTART IDENTITY CASCADE
+    TRUNCATE ${sql(store.TABLE_NAME)} RESTART IDENTITY CASCADE;
   `
 
   await sql`
     INSERT INTO
       spaces (entry_points)
-    VALUES (3)
+    VALUES (3);
   `
 })
 
@@ -42,6 +43,8 @@ afterAll(async () => {
 })
 
 describe('@create', () => {
+  const vehicleId = 'a'
+
   beforeEach(async () => {
     const slot = {
       space_id: 1,
@@ -53,7 +56,17 @@ describe('@create', () => {
 
     await sql`
       INSERT INTO
-        slots ${sql(slot, 'space_id', 'type', 'distance')}
+        slots ${valuesForInsert(sql, slot)};
+    `
+
+    const vehicle = {
+      id: vehicleId,
+      type: 0
+    }
+
+    await sql`
+      INSERT INTO
+        vehicles ${valuesForInsert(sql, vehicle)};
     `
   })
 
@@ -61,7 +74,7 @@ describe('@create', () => {
     const ticket = await store.create({
       id: 1,
       type: 'small'
-    })
+    }, vehicleId)
 
     expect(ticket.startedAt.valueOf()).toBeLessThan(Date.now())
     delete ticket.startedAt
@@ -69,7 +82,9 @@ describe('@create', () => {
     expect(ticket).toStrictEqual({
       id: 1,
       slotId: 1,
-      rate: 5
+      vehicleId: "a",
+      rate: 5,
+      paid: false
     })
   })
 })

@@ -37,7 +37,7 @@ route.post('/:spaceId',
  */
 
 export async function update (req, res) {
-  const { spaceId }= req.params
+  const { spaceId } = req.params
   const { slots } = req.body
 
   const createdSlots = await operations.addSlots(spaceId, slots)

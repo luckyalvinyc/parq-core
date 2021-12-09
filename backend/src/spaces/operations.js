@@ -87,7 +87,6 @@ export async function addEntryPoint (spaceId, label) {
       txn: sql
     })
 
-
     return entryPoint
   })
 

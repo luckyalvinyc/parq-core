@@ -40,23 +40,18 @@ describe('@onError', () => {
 })
 
 describe('@onListen', () => {
-  it('should log what port the server is listening to', () => {
-    jest.spyOn(console, 'log').mockImplementation(() => {})
+  beforeEach(() => {
+    jest.spyOn(process, 'exit').mockImplementation(() => {})
+  })
 
+  it('should not exit the process', () => {
     server.onListen(3000)
 
-    expect(console.log).toHaveBeenCalledTimes(1)
-    expect(console.log).toHaveBeenCalledWith('Listening on port 3000')
+    expect(process.exit).toHaveBeenCalledTimes(0)
   })
 
   it('should exit the process when an error occurs', () => {
-    jest.spyOn(console, 'error').mockImplementation(() => {})
-    jest.spyOn(process, 'exit').mockImplementation(() => {})
-
     server.onListen(3000, new Error('test'))
-
-    expect(console.error).toHaveBeenCalledTimes(1)
-    expect(console.error).toHaveBeenCalledWith('test')
 
     expect(process.exit).toHaveBeenCalledTimes(1)
     expect(process.exit).toHaveBeenCalledWith(1)

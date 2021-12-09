@@ -1,5 +1,17 @@
-import sql from '../pg.js'
+/**
+ * @param {import('postgres').Sql} sql
+ * @param {object[]|object} rows
+ */
 
-export function execute (txn) {
-  return txn ? txn : sql
+export function valuesForInsert (sql, rows) {
+  let row = rows
+
+  if (Array.isArray(rows)) {
+    row = rows[0]
+  }
+
+  const columns = Object.keys(row)
+  const args = [rows].concat(columns)
+
+  return sql(...args)
 }

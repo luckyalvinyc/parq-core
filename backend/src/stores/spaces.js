@@ -1,5 +1,4 @@
 import sql from '../pg.js'
-import { execute } from './utils.js'
 
 export const TABLE_NAME = 'spaces'
 
@@ -7,7 +6,7 @@ export const TABLE_NAME = 'spaces'
  * Creates a parking space and the number of entry points available
  *
  * @param {number} entryPoints
- * @returns {Promise<void>}
+ * @returns {Promise<ReturnType<toSpace>>}
  */
 
 export async function create (entryPoints) {
@@ -15,15 +14,15 @@ export async function create (entryPoints) {
     entry_points: entryPoints
   }
 
-  const [ row ] = await sql`
+  const [row] = await sql`
     INSERT INTO
       ${sql(TABLE_NAME)} ${sql(rowToBeInserted, 'entry_points')}
     RETURNING
       id,
-      entry_points AS "entryPoints"
+      entry_points;
   `
 
-  return row
+  return toSpace(row)
 }
 
 /**
@@ -34,13 +33,13 @@ export async function create (entryPoints) {
  */
 
 export async function exists (spaceId) {
-  const [ row ] = await sql`
+  const [row] = await sql`
     SELECT
       id
     FROM
       ${sql(TABLE_NAME)}
     WHERE
-      id = ${spaceId}
+      id = ${spaceId};
   `
 
   return row !== undefined
@@ -52,17 +51,36 @@ export async function exists (spaceId) {
  * @param {number} spaceId
  * @param {object} [options]
  * @param {object} [options.txn]
+ * @param {Promise<boolean>}
  */
 
 export async function incrementEntryPoints (spaceId, options = {}) {
-  const sql = execute(options.txn)
+  const sqlt = options.txn || sql
 
-  await sql`
+  const result = await sqlt`
     UPDATE
       ${sql(TABLE_NAME)}
     SET
       entry_points = entry_points + 1
     WHERE
-      id = ${spaceId}
+      id = ${spaceId};
   `
+
+  return result.count === 1
+}
+
+/**
+ * Applies necessary transformation to a given row
+ *
+ * @param {object} row
+ * @param {number} row.id
+ * @param {number} row.entry_points
+ * @private
+ */
+
+function toSpace (row) {
+  return {
+    id: row.id,
+    entryPoints: row.entry_points
+  }
 }

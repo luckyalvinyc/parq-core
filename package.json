@@ -2,35 +2,17 @@
   "name": "parq-core",
   "version": "1.0.0",
   "description": "Park anywhere you want. Your vehicle, our responsibility",
-  "main": "app.js",
-  "type": "module",
-  "scripts": {
-    "test:backend": "NODE_OPTIONS=--experimental-vm-modules jest -c backend/jest.config.js",
-    "db:init": "npm run db:create && npm run db:migrate",
-    "db:create": "node backend/scripts/cli.js create",
-    "db:migrate": "ley up --cwd=backend"
-  },
+  "workspaces": [
+    "backend"
+  ],
   "author": "Lucky Alvin Y. Casipe <luckyalvinyc@gmail.com>",
   "license": "UNLICENSED",
   "private": true,
+  "scripts": {
+    "pretest": "docker compose --project-directory=dev up -d",
+    "test": "npm test -w backend"
+  },
   "engines": {
     "node": ">=14.0.0"
-  },
-  "dependencies": {
-    "@polka/parse": "^1.0.0-next.21",
-    "@polka/send": "^1.0.0-next.15",
-    "ajv": "^8.8.2",
-    "ajv-formats": "^2.1.1",
-    "fdir": "^5.1.0",
-    "picomatch": "^2.3.0",
-    "polka": "^1.0.0-next.22",
-    "postgres": "^2.0.0-beta.11",
-    "prexit": "^1.0.0"
-  },
-  "devDependencies": {
-    "jest": "^27.4.3",
-    "jest-environment-node": "^27.4.2",
-    "ley": "^0.7.1",
-    "pgtools": "^0.3.2"
   }
 }

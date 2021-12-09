@@ -6,8 +6,11 @@ import * as parse from '@polka/parse'
 import { fdir } from 'fdir'
 
 import helpers from './middlewares/helpers.js'
+import { logger } from '../lib/logger.js'
 
 /**
+ * Starts the server
+ *
  * @param {object} config
  * @param {string} config.host
  * @param {number} config.port
@@ -34,7 +37,7 @@ export async function start (config) {
       const _server = server.server
 
       _server.close(error => {
-        console.error(error)
+        logger.error(error)
 
         resolve()
       })
@@ -84,6 +87,8 @@ function pathToEndpoints () {
  */
 
 export function onError (error, req, res) {
+  logger.error(error)
+
   res
     .status(error.statusCode || 500)
     .send({
@@ -103,9 +108,10 @@ export function onError (error, req, res) {
 
 export function onListen (port, error) {
   if (error) {
-    console.error(error.message)
+    logger.error(error)
+
     process.exit(1)
   }
 
-  console.log(`Listening on port ${port}`)
+  logger.info(`Listening on port ${port}`)
 }

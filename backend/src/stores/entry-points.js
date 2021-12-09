@@ -1,5 +1,5 @@
 import sql from '../pg.js'
-import { execute } from './utils.js'
+import { valuesForInsert } from './utils.js'
 
 export const TABLE_NAME = 'entry_points'
 
@@ -10,11 +10,11 @@ export const TABLE_NAME = 'entry_points'
  * @param {string} label
  * @param {object} [options]
  * @param {object} [options.txn]
- * @returns {Promise<object>}
+ * @returns {Promise<ReturnType<toEntryPoint>>}
  */
 
 export async function create (spaceId, label, options = {}) {
-  const [ row ] = await _create({
+  const [row] = await _create({
     space_id: spaceId,
     label
   }, options.txn)
@@ -27,7 +27,7 @@ export async function create (spaceId, label, options = {}) {
  *
  * @param {number} spaceId
  * @param {string[]} labels
- * @returns {Promise<object[]>}
+ * @returns {Promise<ReturnType<toEntryPoint>[]>}
  */
 
 export async function bulkCreate (spaceId, labels) {
@@ -53,27 +53,27 @@ export async function bulkCreate (spaceId, labels) {
  */
 
 async function _create (rows, txn) {
-  const sql = execute(txn)
+  const sqlt = txn || sql
 
-  return sql`
+  return sqlt`
     INSERT INTO
-      ${sql(TABLE_NAME)} ${sql(rows, 'space_id', 'label')}
+      ${sql(TABLE_NAME)} ${valuesForInsert(sql, rows)}
     RETURNING
       id,
       space_id,
-      label
+      label;
   `
 }
 
 /**
- * Retrieves an entry point from the given id
+ * Retrieves an entry point from the provided `entryPointId`
  *
  * @param {number} entryPointId
- * @returns {Promise<object>}
+ * @returns {Promise<ReturnType<toEntryPoint>?>}
  */
 
 export async function findById (entryPointId) {
-  const [ row ] = await sql`
+  const [row] = await sql`
     SELECT
       id,
       space_id,
@@ -81,7 +81,7 @@ export async function findById (entryPointId) {
     FROM
       ${sql(TABLE_NAME)}
     WHERE
-      id = ${entryPointId}
+      id = ${entryPointId};
   `
 
   if (!row) {
@@ -95,6 +95,9 @@ export async function findById (entryPointId) {
  * Applies necessary transformation to a given row
  *
  * @param {object} row
+ * @param {number} row.id
+ * @param {number} row.space_id
+ * @param {string} row.label
  * @private
  */
 
