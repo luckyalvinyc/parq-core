@@ -1,5 +1,7 @@
 import { env } from 'process'
 
+import 'dotenv/config'
+
 const {
   NODE_ENV = 'development',
 
@@ -15,11 +17,10 @@ const {
   MEDIUM_RATE = '60',
   LARGE_RATE = '100',
 
-  // POSTGRES
-  POSTGRES_PORT = '5432',
-  POSTGRES_DATABASE = 'parq_core',
-  POSTGRES_USERNAME = 'postgres',
-  POSTGRES_PASSWORD = 'postgres'
+  POSTGRES_PORT,
+  POSTGRES_DATABASE,
+  POSTGRES_USERNAME,
+  POSTGRES_PASSWORD
 } = env
 
 export default {
@@ -44,10 +45,19 @@ export default {
     }
   },
 
-  postgres: {
+  postgres: postgresDefaults({
     port: parseInt(POSTGRES_PORT, 10),
     database: POSTGRES_DATABASE,
     username: POSTGRES_USERNAME,
     password: POSTGRES_PASSWORD
+  })
+}
+
+function postgresDefaults (config) {
+  return {
+    port: config.port || 5432,
+    database: config.database || 'parq_core',
+    username: config.username || 'postgres',
+    password: config.password || 'postgres'
   }
 }

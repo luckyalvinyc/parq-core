@@ -1,7 +1,7 @@
 import { argv, exit } from 'process'
 
+import config from '#config'
 import * as db from './db.js'
-import config from '../config.js'
 
 const command = argv[2]
 

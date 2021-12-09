@@ -3,3 +3,5 @@ node_modules
 
 # coverage directory for jest's --coverage
 coverage
+
+.env

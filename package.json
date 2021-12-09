@@ -9,10 +9,14 @@
   "license": "UNLICENSED",
   "private": true,
   "scripts": {
-    "pretest": "docker compose --project-directory=dev up -d",
+    "setup": "./setup",
+    "pretest": "docker compose --file=./dev/compose.yaml up --detach",
     "test": "npm test -w backend"
   },
   "engines": {
     "node": ">=14.0.0"
+  },
+  "dependencies": {
+    "dotenv": "^10.0.0"
   }
 }

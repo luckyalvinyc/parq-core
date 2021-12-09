@@ -1,0 +1,29 @@
+#!/usr/bin/env sh
+
+set -e
+
+function echo_step () {
+  echo "/**"
+  echo " * $1"
+  echo $' */\n'
+}
+
+echo_step "Installing dependencies"
+npm install
+
+docker compose --file ./dev/compose.yaml up --detach
+
+(
+  cd backend
+
+  echo_step "Preparing .env"
+  test -f .env || cp .env.example .env
+
+  echo_step "Creating database"
+  npm run db:create
+
+  echo_step "Running migrations"
+  npm run db:migrate
+)
+
+echo Done.
