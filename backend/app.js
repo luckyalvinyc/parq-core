@@ -1,7 +1,8 @@
 import prexit from 'prexit'
 
-import config from './config.js'
+import config from '#config'
 import sql from './src/pg.js'
+import { logger } from './src/logger.js'
 import * as server from './src/server.js'
 
 prexit(cleanup)
@@ -11,6 +12,8 @@ let close
 try {
   close = await server.start(config.server)
 } catch (error) {
+  logger.error(error)
+
   await cleanup()
   process.exit(1)
 }

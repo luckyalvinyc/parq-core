@@ -1,6 +1,7 @@
 import { jest } from '@jest/globals'
 
 import * as utils from '#tests/utils.js'
+import { valuesForInsert } from './utils.js'
 
 /**
  * @type {import('./vehicles.js')}
@@ -89,7 +90,7 @@ describe('@findById', () => {
 
     await sql`
       INSERT INTO
-        ${sql(store.TABLE_NAME)} ${utils.db.values(sql, vehicle)};
+        ${sql(store.TABLE_NAME)} ${valuesForInsert(sql, vehicle)};
     `
   })
 
@@ -121,7 +122,7 @@ describe('@updateLastVisit', () => {
 
     await sql`
       INSERT INTO
-        ${sql(store.TABLE_NAME)} ${utils.db.values(sql, vehicle)};
+        ${sql(store.TABLE_NAME)} ${valuesForInsert(sql, vehicle)};
     `
   })
 

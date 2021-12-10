@@ -10,9 +10,7 @@ export default skema
 /**
  * Creates a middleware that can be used to validate incoming requests
  *
- * @param {object} schemaKeyedByTarget - keys can be one of the following:
- *                                         - params
- *                                         - body
+ * @param {Record<string, object>} schemaKeyedByTarget
  * @param {object} [options]
  * @param {string[]} [options.formats]
  * @returns {Function}
@@ -20,6 +18,7 @@ export default skema
 
 function skema (schemaKeyedByTarget, options = {}) {
   const ajv = new Ajv({
+    coerceTypes: Boolean(schemaKeyedByTarget.params),
     removeAdditional: true
   })
 

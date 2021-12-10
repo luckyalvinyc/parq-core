@@ -5,8 +5,8 @@ import Polka from 'polka'
 import * as parse from '@polka/parse'
 import { fdir } from 'fdir'
 
-import helpers from './middlewares/helpers.js'
 import { logger } from './logger.js'
+import helpers from './middlewares/helpers.js'
 
 /**
  * Starts the server
@@ -18,12 +18,9 @@ import { logger } from './logger.js'
 
 export async function start (config) {
   const server = Polka()
-
-  server
-    .use(parse.json())
-    .use(helpers)
-
   server.onError = onError
+
+  applyBaseMiddlewares(server)
 
   await setupRoutes(server, onError)
 
@@ -43,6 +40,21 @@ export async function start (config) {
       })
     })
   }
+}
+
+/**
+ * Applies the base middlewares to the server
+ *  - parse request body
+ *  - `res.send(data)`
+ *  - `res.status(code)`
+ *
+ * @param {ReturnType<Polka>} server
+ */
+
+export function applyBaseMiddlewares (server) {
+  server
+    .use(parse.json())
+    .use(helpers)
 }
 
 /**

@@ -1,9 +1,18 @@
 import { env } from 'process'
 
-import 'dotenv/config'
+import dotenv from 'dotenv'
+
+const Env = {
+  dev: 'development',
+  test: 'test'
+}
+
+if (env.NODE_ENV === Env.dev) {
+  dotenv.config()
+}
 
 const {
-  NODE_ENV = 'development',
+  NODE_ENV = Env.dev,
 
   SERVER_HOST = 'localhost',
   SERVER_PORT = '3000',
@@ -24,8 +33,8 @@ const {
 } = env
 
 export default {
-  isDev: NODE_ENV === 'development',
-  isTest: NODE_ENV === 'test',
+  isDev: NODE_ENV === Env.dev,
+  isTest: NODE_ENV === Env.test,
 
   server: {
     host: SERVER_HOST,

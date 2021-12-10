@@ -41,18 +41,5 @@ export const db = {
     }))
 
     return sql
-  },
-
-  values (sql, rows) {
-    let row = rows
-
-    if (Array.isArray(rows)) {
-      row = rows[0]
-    }
-
-    const columns = Object.keys(row)
-    const args = [rows].concat(columns)
-
-    return sql.apply(sql, args)
   }
 }
