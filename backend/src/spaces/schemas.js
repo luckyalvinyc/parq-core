@@ -13,6 +13,19 @@ export const create = {
   }
 }
 
+export const get = {
+  params: {
+    type: 'object',
+    required: ['spaceId'],
+    properties: {
+      spaceId: {
+        type: 'integer',
+        minimum: 1
+      }
+    }
+  }
+}
+
 export const update = {
   body: {
     type: 'object',
@@ -24,6 +37,10 @@ export const update = {
         uniqueItems: true,
         items: {
           type: 'object',
+          required: [
+            'type',
+            'distance'
+          ],
           properties: {
             type: {
               enum: types.labels

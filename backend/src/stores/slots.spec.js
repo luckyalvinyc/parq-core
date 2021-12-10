@@ -70,41 +70,32 @@ describe('@findNearestAvailableSlot', () => {
   const entryPointId3 = 3
 
   beforeEach(async () => {
-    const slots = [
-      store.build({
-        spaceId,
-        type: 'small',
-        distance: {
-          [entryPointId1]: 0.10,
+    await setupPerDescribe([{
+      spaceId,
+      type: 'small',
+      distance: {
+        [entryPointId1]: 0.10,
           [entryPointId2]: 0.5,
           [entryPointId3]: 0.3
-        }
-      }),
-      store.build({
-        spaceId,
-        type: 'medium',
-        distance: {
-          [entryPointId1]: 0.01,
-          [entryPointId2]: 1,
-          [entryPointId3]: 0.05
-        }
-      }),
-      store.build({
-        spaceId,
-        type: 'large',
-        distance: {
-          [entryPointId1]: 1,
-          [entryPointId2]: 0.20,
-          [entryPointId3]: 0.25
-        },
-        available: false
-      })
-    ]
-
-    await sql`
-      INSERT INTO
-        ${sql(store.TABLE_NAME)} ${valuesForInsert(sql, slots)};
-    `
+      }
+    }, {
+      spaceId,
+      type: 'medium',
+      distance: {
+        [entryPointId1]: 0.01,
+        [entryPointId2]: 1,
+        [entryPointId3]: 0.05
+      }
+    }, {
+      spaceId,
+      type: 'large',
+      distance: {
+        [entryPointId1]: 1,
+        [entryPointId2]: 0.20,
+        [entryPointId3]: 0.25
+      },
+      available: false
+    }])
   })
 
   it('should return the nearest available slot from an entry point', async () => {
@@ -118,7 +109,6 @@ describe('@findNearestAvailableSlot', () => {
     }
 
     expect(isMD5(slot.hash)).toBe(true)
-
     delete slot.hash
 
     expect(slot).toStrictEqual({
@@ -138,24 +128,37 @@ describe('@findNearestAvailableSlot', () => {
   })
 })
 
+describe('@listBySpaceId', () => {
+  const spaceId = 1
+
+  beforeEach(async () => {
+    await setupPerDescribe()
+  })
+
+  it('should return a list of slots from the provided `spaceId`', async () => {
+    const slots = await store.listBySpaceId(spaceId)
+
+    expect(slots).toStrictEqual([{
+      id: 1,
+      type: 'small',
+      available: true
+    }])
+  })
+
+  it('should return an empty list if space does not contain any slots', async () => {
+    const slots = await store.listBySpaceId(2)
+
+    expect(slots).toStrictEqual([])
+  })
+})
+
 describe('@occupy', () => {
   let slotId
 
   beforeEach(async () => {
     slotId = 1
 
-    const slot = store.build({
-      spaceId: 1,
-      type: 'small',
-      distance: {
-        1: 0
-      }
-    })
-
-    await sql`
-      INSERT INTO
-        ${sql(store.TABLE_NAME)} ${valuesForInsert(sql, slot)};
-    `
+    await setupPerDescribe()
   })
 
   it('should set `available` column to `false`', async () => {
@@ -272,19 +275,14 @@ describe('@vacant', () => {
   beforeEach(async () => {
     slotId = 1
 
-    const slot = store.build({
+    await setupPerDescribe([{
       spaceId: 1,
       type: 'small',
       distance: {
         1: 0
       },
       available: false
-    })
-
-    await sql`
-      INSERT INTO
-        ${sql(store.TABLE_NAME)} ${valuesForInsert(sql, slot)};
-    `
+    }])
   })
 
   it('should set `available` column to `true`', async () => {
@@ -353,19 +351,7 @@ describe('@vacant', () => {
 
 describe('@includeNewEntryPoint', () => {
   beforeEach(async () => {
-    const slot = store.build({
-      spaceId: 1,
-      type: 'small',
-      distance: {
-        1: 0
-      },
-      available: false
-    })
-
-    await sql`
-      INSERT INTO
-        ${sql(store.TABLE_NAME)} ${valuesForInsert(sql, slot)};
-    `
+    await setupPerDescribe()
   })
 
   it('should add the new entry point ID as a key to the `distance`', async () => {
@@ -389,3 +375,26 @@ describe('@includeNewEntryPoint', () => {
     })
   })
 })
+
+async function setupPerDescribe (slots = []) {
+  const rowsToBeInserted = []
+
+  if (!slots.length) {
+    rowsToBeInserted.push(store.build({
+      spaceId: 1,
+      type: 'small',
+      distance: {
+        1: 0
+      }
+    }))
+  }
+
+  for (const slot of slots) {
+    rowsToBeInserted.push(store.build(slot))
+  }
+
+  await sql`
+    INSERT INTO
+      ${sql(store.TABLE_NAME)} ${valuesForInsert(sql, rowsToBeInserted)};
+  `
+}

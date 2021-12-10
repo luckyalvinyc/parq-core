@@ -82,6 +82,30 @@ export async function findNearestAvailableSlot (entryPoint, type) {
 }
 
 /**
+ * List all slots for the provided `spaceId`
+ *
+ * @param {number} spaceId
+ * @returns {Promise<ReturnType<toSlot>[]>}
+ */
+
+export async function listBySpaceId (spaceId) {
+  const rows = await sql`
+    SELECT
+      id,
+      type,
+      available
+    FROM
+      ${sql(TABLE_NAME)}
+    WHERE
+      space_id = ${spaceId}
+    ORDER BY
+      id ASC;
+  `
+
+  return rows.map(toSlot)
+}
+
+/**
  * Sets the `available` to `false` for the selected slot
  *
  * @param {number} slotId

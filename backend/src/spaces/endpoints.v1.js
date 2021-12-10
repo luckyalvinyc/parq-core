@@ -29,6 +29,23 @@ export async function create (req, res) {
   })
 }
 
+route.get('/:spaceId',
+  skema(schemas.get), get)
+
+/**
+ * Handles requests for retrieving a space
+ */
+
+async function get (req, res) {
+  const { spaceId } = req.params
+
+  const space = await operations.getSpace(spaceId)
+
+  res.send({
+    data: space
+  })
+}
+
 route.post('/:spaceId',
   skema(schemas.update), update)
 
@@ -36,7 +53,7 @@ route.post('/:spaceId',
  * Handles requests for adding slots to a space
  */
 
-export async function update (req, res) {
+async function update (req, res) {
   const { spaceId } = req.params
   const { slots } = req.body
 

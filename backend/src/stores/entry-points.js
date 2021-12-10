@@ -92,6 +92,29 @@ export async function findById (entryPointId) {
 }
 
 /**
+ * List all entry points for the provided `spaceId`
+ *
+ * @param {number} spaceId
+ * @returns {Promise<ReturnType<toEntryPoint>[]>}
+ */
+
+export async function listBySpaceId (spaceId) {
+  const rows = await sql`
+    SELECT
+      id,
+      label
+    FROM
+      ${sql(TABLE_NAME)}
+    WHERE
+      space_id = ${spaceId}
+    ORDER BY
+      id ASC;
+  `
+
+  return rows.map(toEntryPoint)
+}
+
+/**
  * Builds an object where the keys are the entry IDs and the value is `1`
  *
  * @param {number} spaceId
@@ -105,7 +128,7 @@ export async function buildDistanceById (spaceId) {
     FROM
       ${sql(TABLE_NAME)}
     WHERE
-      space_id = ${spaceId}
+      space_id = ${spaceId};
   `
 
   return row.distance
@@ -136,15 +159,20 @@ export function build (entryPoint) {
  *
  * @param {object} row
  * @param {number} row.id
- * @param {number} row.space_id
+ * @param {number} [row.space_id]
  * @param {string} row.label
  * @private
  */
 
 function toEntryPoint (row) {
-  return {
+  const entryPoint = {
     id: row.id,
-    spaceId: row.space_id,
     label: row.label
   }
+
+  if (row.space_id) {
+    entryPoint.spaceId = row.space_id
+  }
+
+  return entryPoint
 }

@@ -19,11 +19,16 @@ describe('@issueTicket', () => {
   let issueTicket
 
   const entryPointId = 1
-  const vehicleType = 'small'
 
   const ticket = {
     id: 1,
+    slotId: 1,
+    rate: 20,
     startedAt: new Date()
+  }
+  const vehicle = {
+    plateNumber: 'a',
+    type: 'small'
   }
 
   beforeEach(async () => {
@@ -63,11 +68,6 @@ describe('@issueTicket', () => {
   })
 
   it('should issue a ticket from an entry point and creates the vehicle', async () => {
-    const vehicle = {
-      plateNumber: 'a',
-      type: 'small'
-    }
-
     const issuedTicket = await issueTicket(entryPointId, vehicle)
 
     expect(stores.entryPoints.findById).toHaveBeenCalledTimes(1)
@@ -98,7 +98,10 @@ describe('@issueTicket', () => {
       txn: 'transaction'
     })
 
-    expect(issuedTicket).toStrictEqual(ticket)
+    expect(issuedTicket).toStrictEqual({
+      ...ticket,
+      type: 'small'
+    })
   })
 
   it('should throw an error if entry point does not exists', async () => {
@@ -107,7 +110,7 @@ describe('@issueTicket', () => {
     let error
 
     try {
-      await issueTicket(entryPointId, vehicleType)
+      await issueTicket(entryPointId, vehicle)
     } catch (err) {
       error = err
     }
@@ -125,7 +128,7 @@ describe('@issueTicket', () => {
     let error
 
     try {
-      await issueTicket(entryPointId, vehicleType)
+      await issueTicket(entryPointId, vehicle)
     } catch (err) {
       error = err
     }
@@ -139,7 +142,7 @@ describe('@issueTicket', () => {
     let error
 
     try {
-      await issueTicket(entryPointId, vehicleType)
+      await issueTicket(entryPointId, vehicle)
     } catch (err) {
       error = err
     }
@@ -153,7 +156,7 @@ describe('@issueTicket', () => {
     let error
 
     try {
-      await issueTicket(entryPointId, vehicleType)
+      await issueTicket(entryPointId, vehicle)
     } catch (err) {
       error = err
     }

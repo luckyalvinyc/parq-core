@@ -18,13 +18,13 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   await sql`
-    TRUNCATE ${sql(store.TABLE_NAME)} RESTART IDENTITY CASCADE
+    TRUNCATE ${sql(store.TABLE_NAME)} RESTART IDENTITY CASCADE;
   `
 
   await sql`
     INSERT INTO
       spaces (entry_points)
-    VALUES (3)
+    VALUES (3);
   `
 })
 
@@ -82,6 +82,29 @@ describe('@findById', () => {
   })
 })
 
+describe('@listBySpaceId', () => {
+  const spaceId = 1
+
+  beforeEach(async () => {
+    await setupPerDescribe()
+  })
+
+  it('should return a list of entry points from the provided `spaceId`', async () => {
+    const entryPoints = await store.listBySpaceId(spaceId)
+
+    expect(entryPoints).toStrictEqual([{
+      id: 1,
+      label: 'a'
+    }])
+  })
+
+  it('should return an empty list if space does not contain any entry points', async () => {
+    const entryPoints = await store.listBySpaceId(2)
+
+    expect(entryPoints).toStrictEqual([])
+  })
+})
+
 describe('@buildDistanceById', () => {
   beforeEach(async () => {
     await setupPerDescribe([
@@ -125,6 +148,6 @@ async function setupPerDescribe (additional = []) {
 
   await sql`
     INSERT INTO
-      ${sql(store.TABLE_NAME)} ${valuesForInsert(sql, rowsToBeInserted)}
+      ${sql(store.TABLE_NAME)} ${valuesForInsert(sql, rowsToBeInserted)};
   `
 }

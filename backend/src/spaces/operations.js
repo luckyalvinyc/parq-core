@@ -39,6 +39,35 @@ function createLabels (numberOfEntryPoints) {
 }
 
 /**
+ * Retrieves the information about the parking space
+ *
+ * @param {number} spaceId
+ */
+
+export async function getSpace (spaceId) {
+  const exists = await stores.spaces.exists(spaceId)
+
+  if (!exists) {
+    throw errors.notFound('space', {
+      id: spaceId
+    })
+  }
+
+  const [
+    entryPoints,
+    slots
+  ] = await Promise.all([
+    stores.entryPoints.listBySpaceId(spaceId),
+    stores.slots.listBySpaceId(spaceId)
+  ])
+
+  return {
+    entryPoints,
+    slots
+  }
+}
+
+/**
  * Adds one or more slots to a parking space
  *
  * @param {number} spaceId
@@ -84,7 +113,7 @@ function withDefaultDistance (slots, defaultDistance) {
       type: slot.type
     }
 
-    const sanitizedDistance = sanitize(defaultDistance, slot.distance)
+    const sanitizedDistance = removeUnknownEntryPointIds(defaultDistance, slot.distance)
 
     if (!sanitizedDistance) {
       continue
@@ -98,14 +127,14 @@ function withDefaultDistance (slots, defaultDistance) {
 }
 
 /**
- * Checks if a `distance` contains an unknown entry point ID
+ * Checks the `distance` if it contains unknown entry point IDs
  *  if it does, it will be removed from the `distance`
  *
  * @param {Record<string, number>} defaultDistance
  * @param {Record<string, number>} distance
  */
 
-function sanitize (defaultDistance, distance) {
+export function removeUnknownEntryPointIds (defaultDistance, distance) {
   let hasKey = false
 
   const sanitized = Object.create(null)
