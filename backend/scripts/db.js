@@ -1,5 +1,7 @@
 import postgres from 'postgres'
 
+const DUPLICATE_DATABASE = '42P04'
+
 /**
  * Creates the database from the provided `config`
  *
@@ -34,8 +36,7 @@ export async function create (config, options = {}) {
     console.log(`Database ${config.database} has been created`)
   } catch (error) {
     // https://www.postgresql.org/docs/13/errcodes-appendix.html
-    // 42P04 - duplicate_database
-    if (error?.code !== '42P04') {
+    if (error.code !== DUPLICATE_DATABASE) {
       console.error(error.message)
 
       process.exit(1)
