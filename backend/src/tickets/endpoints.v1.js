@@ -1,7 +1,6 @@
 import Route from 'polka'
 
 import config from '#config'
-import errors from '../errors.js'
 import * as schemas from './schemas.js'
 import * as operations from './operations.js'
 
