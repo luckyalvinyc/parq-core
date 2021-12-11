@@ -1,0 +1,22 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite"
+  },
+  "author": "Lucky Alvin Y. Casipe <luckylavinyc@gmail.com>",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "navaid": "^1.2.0"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^1.0.0-next.11",
+    "@unocss/preset-uno": "^0.15.6",
+    "@unocss/reset": "^0.15.6",
+    "svelte": "^3.37.0",
+    "unocss": "^0.15.6",
+    "vite": "^2.6.4"
+  }
+}
