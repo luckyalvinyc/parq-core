@@ -36,6 +36,10 @@ async function create (req, res) {
 route.post('/:ticketId',
   skema(schemas.update), update)
 
+/**
+ * Handles requests for updating ticket status
+ */
+
 async function update (req, res) {
   const { ticketId } = req.params
   const { numberOfHoursToAdvance } = req.body
