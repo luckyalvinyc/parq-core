@@ -32,6 +32,22 @@ async function create (req, res) {
   })
 }
 
+route.get('/', list)
+
+/**
+ * Handles requests for listing parking spaces
+ */
+
+async function list (req, res) {
+  const spaces = await operations.listSpaces()
+
+  res.send({
+    data: {
+      spaces
+    }
+  })
+}
+
 route.get('/:spaceId',
   skema(schemas.get), get)
 
