@@ -1,6 +1,7 @@
 import { env } from 'process'
-import { fileURLToPath } from 'url'
 import { resolve } from 'path'
+import { fileURLToPath } from 'url'
+
 import ley from 'ley'
 
 import { create as createDB } from '../scripts/db.js'
@@ -14,7 +15,9 @@ async function setup () {
   const mod = await import('../config.js')
   const config = mod.default
 
-  await createDB(config.postgres)
+  await createDB(config.postgres, {
+    force: true
+  })
 
   await ley.up({
     cwd: resolve(fileURLToPath(import.meta.url), '..', '..'),

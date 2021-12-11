@@ -5,7 +5,10 @@
   "main": "app.js",
   "type": "module",
   "scripts": {
+    "compose:up": "docker compose --file=../dev/compose.yaml up --detach",
+    "predev": "npm run compose:up",
     "dev": "cross-env NODE_ENV=development nodemand app.js",
+    "pretest": "npm run compose:up",
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest",
     "db:create": "node scripts/cli.js create",
     "db:migrate": "ley up"
@@ -13,9 +16,6 @@
   "author": "Lucky Alvin Y. Casipe <luckyalvinyc@gmail.com>",
   "license": "UNLICENSED",
   "private": true,
-  "engines": {
-    "node": ">=14.0.0"
-  },
   "imports": {
     "#config": "./config.js",
     "#stores": "./src/stores/index.js",
@@ -39,7 +39,6 @@
     "jest-environment-node": "^27.4.2",
     "ley": "^0.7.1",
     "nodemand": "^0.1.11",
-    "pgtools": "^0.3.2",
     "pino-pretty": "^7.2.0"
   }
 }

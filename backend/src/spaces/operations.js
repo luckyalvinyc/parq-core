@@ -5,16 +5,26 @@ import * as stores from '#stores'
 /**
  * Creates a parking space with the specified number of entry points
  *
+ * @param {string} name
  * @param {number} numberOfEntryPoints
- * @returns {Promise<object[]>}
  */
 
-export async function createSpace (numberOfEntryPoints) {
-  const space = await stores.spaces.create(numberOfEntryPoints)
+export async function createSpace (name, numberOfEntryPoints) {
+  const space = await stores.spaces.create({
+    name,
+    entryPoints: numberOfEntryPoints
+  })
+
+  if (!space) {
+    throw errors.badRequest('name_already_taken', {
+      name
+    })
+  }
 
   const labels = createLabels(numberOfEntryPoints)
+  await stores.entryPoints.bulkCreate(space.id, labels)
 
-  return stores.entryPoints.bulkCreate(space.id, labels)
+  return space
 }
 
 /**
@@ -36,6 +46,14 @@ function createLabels (numberOfEntryPoints) {
   }
 
   return labels
+}
+
+/**
+ * List all created parking space
+ */
+
+export async function listSpaces () {
+  return stores.spaces.list()
 }
 
 /**

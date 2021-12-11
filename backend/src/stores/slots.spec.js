@@ -1,5 +1,6 @@
 import { jest } from '@jest/globals'
 
+import * as spaces from './spaces.js'
 import * as utils from '#tests/utils.js'
 import { valuesForInsert } from '../stores/utils.js'
 
@@ -18,13 +19,17 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   await sql`
-    TRUNCATE TABLE slots RESTART IDENTITY CASCADE;
+    TRUNCATE TABLE ${sql(spaces.TABLE_NAME)} RESTART IDENTITY CASCADE;
   `
+
+  const rowToBeInserted = spaces.build({
+    name: 'acme',
+    entryPoints: 3
+  })
 
   await sql`
     INSERT INTO
-      spaces (entry_points)
-    VALUES (3);
+      ${sql(spaces.TABLE_NAME)} ${valuesForInsert(sql, rowToBeInserted)};
   `
 })
 
@@ -75,8 +80,8 @@ describe('@findNearestAvailableSlot', () => {
       type: 'small',
       distance: {
         [entryPointId1]: 0.10,
-          [entryPointId2]: 0.5,
-          [entryPointId3]: 0.3
+        [entryPointId2]: 0.5,
+        [entryPointId3]: 0.3
       }
     }, {
       spaceId,
@@ -372,6 +377,36 @@ describe('@includeNewEntryPoint', () => {
     expect(row.distance).toStrictEqual({
       1: 0,
       2: 1
+    })
+  })
+})
+
+describe('@toSlot', () => {
+  it('should include `ticket` property if present from the provided `row`', () => {
+    const startedAt = new Date()
+
+    const slot = store.toSlot({
+      id: 1,
+      type: 0,
+      available: true,
+      ticket: {
+        id: 1,
+        vehicle_id: 'a',
+        rate: 10,
+        created_at: startedAt
+      }
+    })
+
+    expect(slot).toStrictEqual({
+      id: 1,
+      type: 'small',
+      available: true,
+      ticket: {
+        id: 1,
+        vehicleId: 'a',
+        rate: 10,
+        startedAt: startedAt
+      }
     })
   })
 })

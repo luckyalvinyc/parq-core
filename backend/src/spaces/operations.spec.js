@@ -17,7 +17,8 @@ describe('@createSpace', () => {
     jest.unstable_mockModule('#stores', () => ({
       spaces: {
         create: jest.fn().mockResolvedValue({
-          id: 1
+          id: 1,
+          name: 'acme'
         })
       },
 
@@ -37,19 +38,66 @@ describe('@createSpace', () => {
   })
 
   it('should create a parking space from the provided entry points', async () => {
-    const entryPoints = await createSpace(1)
+    const space = await createSpace('acme', 1)
 
     expect(stores.spaces.create).toHaveBeenCalledTimes(1)
-    expect(stores.spaces.create).toHaveBeenCalledWith(1)
+    expect(stores.spaces.create).toHaveBeenCalledWith({
+      name: 'acme',
+      entryPoints: 1
+    })
 
     expect(stores.entryPoints.bulkCreate).toHaveBeenCalledTimes(1)
     expect(stores.entryPoints.bulkCreate).toHaveBeenCalledWith(1, ['A'])
 
-    expect(entryPoints).toStrictEqual([{
+    expect(space).toStrictEqual({
       id: 1,
-      spaceId: 1,
-      label: 'A'
-    }])
+      name: 'acme'
+    })
+  })
+
+  it('should throw an error if parking space with the provided name already taken', async () => {
+    stores.spaces.create.mockResolvedValue(null)
+
+    let error
+
+    try {
+      await createSpace('acme', 1)
+    } catch (err) {
+      error = err
+    }
+
+    expect(stores.spaces.create).toHaveBeenCalledTimes(1)
+
+    expect(error.type).toBe('bad_request')
+    expect(error.message).toBe('name_already_taken')
+  })
+})
+
+describe('@listSpaces', () => {
+  /**
+   * @type {import('./operations.js').listSpaces}
+   */
+  let listSpaces
+
+  beforeEach(async () => {
+    jest.unstable_mockModule('#stores', async () => ({
+      spaces: {
+        list: jest.fn().mockResolvedValue([])
+      }
+    }))
+
+    stores = await import('#stores')
+    const operations = await import('./operations.js')
+
+    listSpaces = operations.listSpaces
+  })
+
+  it('should return a list of parking space', async () => {
+    const spaces = await listSpaces()
+
+    expect(stores.spaces.list).toHaveBeenCalledTimes(1)
+
+    expect(spaces).toStrictEqual([])
   })
 })
 
@@ -253,7 +301,7 @@ describe('@removeUnknownEntryPointIds', () => {
     4: 0.1
   }
 
-  const distanceAllUnknownIds= {
+  const distanceAllUnknownIds = {
     4: 0.5,
     5: 0.5
   }

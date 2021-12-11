@@ -3,8 +3,15 @@ import { types } from '../types.js'
 export const create = {
   body: {
     type: 'object',
-    required: ['numberOfEntryPoints'],
+    required: [
+      'name',
+      'numberOfEntryPoints'
+    ],
     properties: {
+      name: {
+        type: 'string',
+        minLength: 1
+      },
       numberOfEntryPoints: {
         type: 'integer',
         minimum: 3

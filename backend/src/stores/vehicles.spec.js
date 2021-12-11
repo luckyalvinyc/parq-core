@@ -1,5 +1,6 @@
 import { jest } from '@jest/globals'
 
+import * as spaces from './spaces.js'
 import * as utils from '#tests/utils.js'
 import { valuesForInsert } from './utils.js'
 
@@ -17,14 +18,23 @@ beforeAll(async () => {
 })
 
 beforeEach(async () => {
-  await sql`
-    TRUNCATE ${sql(store.TABLE_NAME)} RESTART IDENTITY CASCADE;
-  `
+  await Promise.all([
+    sql`
+      TRUNCATE ${sql(store.TABLE_NAME)} RESTART IDENTITY CASCADE;
+    `,
+    sql`
+      TRUNCATE ${sql(spaces.TABLE_NAME)} RESTART IDENTITY CASCADE;
+    `
+  ])
+
+  const rowToBeInserted = spaces.build({
+    name: 'acme',
+    entryPoints: 3
+  })
 
   await sql`
     INSERT INTO
-      spaces (entry_points)
-    VALUES (3);
+      ${sql(spaces.TABLE_NAME)} ${valuesForInsert(sql, rowToBeInserted)};
   `
 })
 

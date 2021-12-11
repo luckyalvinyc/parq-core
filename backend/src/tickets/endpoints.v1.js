@@ -35,36 +35,18 @@ async function create (req, res) {
 }
 
 route.post('/:ticketId',
-  skema(schemas.update, schemas.options), validateEndAt, update)
-
-function validateEndAt (req, res, next) {
-  const { endAt } = req.body
-
-  if (!endAt) {
-    return next()
-  }
-
-  const endAtDate = new Date(endAt)
-
-  const now = new Date()
-  now.setMilliseconds(0)
-
-  if (endAtDate < now) {
-    return next(errors.badRequest('validation'))
-  }
-
-  req.body.endAt = endAtDate
-
-  next()
-}
+  skema(schemas.update), update)
 
 async function update (req, res) {
   const { ticketId } = req.params
-  const { endAt } = req.body
+  const { numberOfHoursToAdvance } = req.body
 
   const options = {}
 
   if (config.isDev) {
+    const endAt = new Date()
+    endAt.setHours(endAt.getHours() + numberOfHoursToAdvance)
+
     options.endAt = endAt
   }
 

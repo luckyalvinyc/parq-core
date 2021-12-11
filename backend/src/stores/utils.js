@@ -1,4 +1,6 @@
 /**
+ * A helper function to ease the process of inserting a row
+ *
  * @param {import('postgres').Sql} sql
  * @param {object[]|object} rows
  */

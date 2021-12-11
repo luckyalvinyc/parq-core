@@ -91,15 +91,30 @@ export async function findNearestAvailableSlot (entryPoint, type) {
 export async function listBySpaceId (spaceId) {
   const rows = await sql`
     SELECT
-      id,
-      type,
-      available
+      slots.id,
+      slots.type,
+      slots.available,
+
+      t.ticket
     FROM
       ${sql(TABLE_NAME)}
+    LEFT JOIN LATERAL (
+      SELECT
+        json_build_object(
+          'id', tickets.id,
+          'vehicle_id', tickets.vehicle_id,
+          'rate', tickets.rate,
+          'created_at', tickets.created_at
+        ) AS ticket
+      FROM
+        tickets
+      WHERE
+        tickets.slot_id = slots.id
+    ) AS t ON true
     WHERE
-      space_id = ${spaceId}
+      slots.space_id = ${spaceId}
     ORDER BY
-      id ASC;
+      slots.id ASC;
   `
 
   return rows.map(toSlot)
@@ -238,10 +253,15 @@ export function build (slot) {
  * @param {number} row.type
  * @param {boolean} row.available
  * @param {string} [row.md5]
+ * @param {object} [row.ticket]
+ * @param {number} row.ticket.id
+ * @param {number} row.ticket.vehicle_id
+ * @param {number} row.ticket.rate
+ * @param {Date} row.ticket.created_at
  * @private
  */
 
-function toSlot (row) {
+export function toSlot (row) {
   const slot = {
     id: row.id,
     type: types.from(row.type),
@@ -250,6 +270,15 @@ function toSlot (row) {
 
   if (row.md5) {
     slot.hash = row.md5
+  }
+
+  if (row.ticket) {
+    slot.ticket = {
+      id: row.ticket.id,
+      vehicleId: row.ticket.vehicle_id,
+      rate: row.ticket.rate,
+      startedAt: row.ticket.created_at
+    }
   }
 
   return slot

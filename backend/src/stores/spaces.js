@@ -1,28 +1,56 @@
 import sql from '../pg.js'
+import { valuesForInsert } from './utils.js'
 
 export const TABLE_NAME = 'spaces'
+const UNIQUE_VIOLATION = '23505'
 
 /**
  * Creates a parking space and the number of entry points available
  *
- * @param {number} entryPoints
- * @returns {Promise<ReturnType<toSpace>>}
+ * @param {object} space
+ * @param {string} space.name
+ * @param {number} space.entryPoints
+ * @returns {Promise<ReturnType<toSpace>?>}
  */
 
-export async function create (entryPoints) {
-  const rowToBeInserted = {
-    entry_points: entryPoints
-  }
+export async function create (space) {
+  const rowToBeInserted = build(space)
 
-  const [row] = await sql`
-    INSERT INTO
-      ${sql(TABLE_NAME)} ${sql(rowToBeInserted, 'entry_points')}
-    RETURNING
+  try {
+    const [row] = await sql`
+      INSERT INTO
+        ${sql(TABLE_NAME)} ${valuesForInsert(sql, rowToBeInserted)}
+      RETURNING
+        id,
+        name;
+    `
+
+    return toSpace(row)
+  } catch (error) {
+    if (error.code !== UNIQUE_VIOLATION) {
+      throw error
+    }
+
+    return null
+  }
+}
+
+/**
+ * List all parking spaces
+ *
+ * @returns {Promise<ReturnType<toSpace>[]>}
+ */
+
+export async function list () {
+  const rows = await sql`
+    SELECT
       id,
-      entry_points;
+      name
+    FROM
+      ${sql(TABLE_NAME)};
   `
 
-  return toSpace(row)
+  return rows.map(toSpace)
 }
 
 /**
@@ -71,17 +99,37 @@ export async function incrementEntryPoints (spaceId, options = {}) {
 }
 
 /**
+ * Converts the given `space` to a DB compatible object
+ *
+ * @param {object} space
+ * @param {string} space.name
+ * @param {number} space.entryPoints
+ */
+
+export function build (space) {
+  const {
+    name,
+    entryPoints
+  } = space
+
+  return {
+    name,
+    entry_points: entryPoints
+  }
+}
+
+/**
  * Applies necessary transformation to a given row
  *
  * @param {object} row
  * @param {number} row.id
- * @param {number} row.entry_points
+ * @param {string} row.name
  * @private
  */
 
 function toSpace (row) {
   return {
     id: row.id,
-    entryPoints: row.entry_points
+    name: row.name
   }
 }

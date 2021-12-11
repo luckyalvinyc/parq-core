@@ -36,14 +36,10 @@ export const update = {
   body: {
     type: 'object',
     properties: {
-      endAt: {
-        type: 'string',
-        format: 'date-time'
+      numberOfHoursToAdvance: {
+        type: 'integer',
+        minimum: 1
       }
     }
   }
-}
-
-export const options = {
-  formats: ['date-time']
 }

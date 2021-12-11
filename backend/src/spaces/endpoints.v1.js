@@ -17,14 +17,17 @@ route.post('/',
  *  which can have multiple entry points
  */
 
-export async function create (req, res) {
-  const { numberOfEntryPoints } = req.body
+async function create (req, res) {
+  const {
+    name,
+    numberOfEntryPoints
+  } = req.body
 
-  const entryPoints = await operations.createSpace(numberOfEntryPoints)
+  const space = await operations.createSpace(name, numberOfEntryPoints)
 
   res.send({
     data: {
-      entryPoints
+      space
     }
   })
 }
