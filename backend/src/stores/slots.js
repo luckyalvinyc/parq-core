@@ -109,7 +109,8 @@ export async function listBySpaceId (spaceId) {
       FROM
         tickets
       WHERE
-        tickets.slot_id = slots.id
+        tickets.slot_id = slots.id AND
+        tickets.paid = false
     ) AS t ON true
     WHERE
       slots.space_id = ${spaceId}
