@@ -69,6 +69,22 @@ function spaces (prefix = '/spaces') {
       })
 
       return response.data
+    },
+
+    /**
+     * POST /spaces/:spaceId/entry_points
+     *
+     * @param {number} spaceId
+     * @param {string} label
+     * @returns {Promise<object>}
+     */
+
+    async addEntryPoint (spaceId, label) {
+      const response = await req.post(`${prefix}/${spaceId}/entry_points`, {
+        label: label.trim()
+      })
+
+      return response.data
     }
   }
 }
