@@ -5,7 +5,7 @@
 The command below will do the following
 
 - Install needed dependencies
-- Run PostgreSQL using a Docker
+- Run PostgreSQL using Docker
 - Create `.env` file
 
 ```sh
