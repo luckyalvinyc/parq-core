@@ -70,7 +70,7 @@ export async function findNearestAvailableSlot (entryPoint, type) {
       available = true
     ORDER BY
       distance->>${entryPointId} ASC,
-      TYPE ASC
+      type ASC
     LIMIT 1;
   `
 
