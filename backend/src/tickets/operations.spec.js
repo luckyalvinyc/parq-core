@@ -20,17 +20,23 @@ describe('@issueTicket', () => {
 
   const entryPointId = 1
 
+  const vehicle = {
+    plateNumber: 'a',
+    type: 'small'
+  }
+
   const ticket = {
     id: 1,
     slotId: 1,
-    vehicleId: 'a',
     rate: 20,
     startedAt: new Date()
   }
 
-  const vehicle = {
-    plateNumber: 'a',
-    type: 'small'
+  function withVehicle (vehicle) {
+    return {
+      ...ticket,
+      vehicle
+    }
   }
 
   beforeEach(async () => {
@@ -101,7 +107,10 @@ describe('@issueTicket', () => {
     })
 
     expect(issuedTicket).toStrictEqual({
-      ...ticket,
+      ...withVehicle({
+        id: 'a',
+        type: 'small'
+      }),
       type: 'small'
     })
   })

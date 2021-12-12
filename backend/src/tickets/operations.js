@@ -57,10 +57,10 @@ export async function issueTicket (entryPointId, vehicle) {
     return {
       id: ticket.id,
       slotId: ticket.slotId,
-      vehicleId: ticket.vehicleId,
       type: slot.type,
       rate: ticket.rate,
-      startedAt: ticket.startedAt
+      startedAt: ticket.startedAt,
+      vehicle: createdVehicle
     }
   })
 }
