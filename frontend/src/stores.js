@@ -11,6 +11,13 @@ export const slot = writable(null)
 function createSlots () {
   const { subscribe, set, update } = writable({})
 
+  /**
+   * Adds the provided `slots` to the list of slots
+   *
+   * @param {object[]} slots
+   * @param {number} slots[].id
+   */
+
   function add (slots) {
     const byIds = {}
 
@@ -25,6 +32,7 @@ function createSlots () {
   }
 
   /**
+   * Sets the slots by their IDs
    *
    * @param {object[]} slots
    * @param {number} slots[].id
@@ -42,6 +50,13 @@ function createSlots () {
     set(byIds)
   }
 
+  /**
+   * Marks a slot as occupied in which the `available` status will be `false`
+   *
+   * @param {object} ticket
+   * @param {number} ticket.slotId
+   */
+
   function markAsOccupied (ticket) {
     const { slotId } = ticket
 
@@ -58,6 +73,12 @@ function createSlots () {
       }
     })
   }
+
+  /**
+   * Marks a slot as vacant in which the `available` status will be `true`
+   *
+   * @param {object} slotId
+   */
 
   function markAsVacant (slotId) {
     update(slots => {
