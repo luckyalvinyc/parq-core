@@ -63,17 +63,23 @@ export async function findById (vehicleId) {
  * @param {string} vehicleId
  * @param {object} [options]
  * @param {object} [options.txn]
+ * @param {Date} [options.endAt]
  * @returns {Promise<boolean>}
  */
 
 export async function updateLastVisit (vehicleId, options = {}) {
-  const sqlt = options.txn || sql
+  const {
+    txn,
+    endAt = null
+  } = options
+
+  const sqlt = txn || sql
 
   const result = await sqlt`
     UPDATE
       ${sql(TABLE_NAME)}
     SET
-      updated_at = CURRENT_TIMESTAMP
+      updated_at = COALESCE(${endAt}, CURRENT_TIMESTAMP)
     WHERE
       id = ${vehicleId};
   `
@@ -103,7 +109,7 @@ export function build (vehicle) {
   }
 
   if (vehicle.lastVisitedAt) {
-    row.updated_at = vehicle.lastVisitedAt
+    row.updated_at = lastVisitedAt
   }
 
   return row

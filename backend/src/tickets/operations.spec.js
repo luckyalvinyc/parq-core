@@ -301,8 +301,6 @@ describe('@payTicket', () => {
 
     expect(stores.tickets.pay).toHaveBeenCalledTimes(1)
     expect(stores.tickets.pay.mock.calls[0][1]).toBe(0)
-
-    expect(stores.vehicles.updateLastVisit).toHaveBeenCalledTimes(0)
   })
 
   it('should pay the flat rate if the last visited date exceeds the grace period', async () => {

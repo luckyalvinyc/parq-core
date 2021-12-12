@@ -88,11 +88,17 @@ export async function checkForUnpaidTicket (vehicleId) {
  * @param {number} amount
  * @param {object} [options]
  * @param {object} [options.txn]
+ * @param {Date} [options.endAt]
  * @returns {Promise<ReturnType<toTicket>?>}
  */
 
 export async function pay (ticketId, amount, options = {}) {
-  const sqlt = options.txn || sql
+  const {
+    txn,
+    endAt = null
+  } = options
+
+  const sqlt = txn || sql
 
   const [row] = await sqlt`
     UPDATE
@@ -100,7 +106,7 @@ export async function pay (ticketId, amount, options = {}) {
     SET
       amount = ${amount},
       paid = true,
-      updated_at = CURRENT_TIMESTAMP
+      updated_at = COALESCE(${endAt}, CURRENT_TIMESTAMP)
     WHERE
       id = ${ticketId}
     RETURNING

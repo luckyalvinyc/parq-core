@@ -46,7 +46,7 @@ async function update (req, res) {
 
   const options = {}
 
-  if (config.isDev) {
+  if (config.isDev && numberOfHoursToAdvance) {
     const endAt = new Date()
     endAt.setHours(endAt.getHours() + numberOfHoursToAdvance)
 

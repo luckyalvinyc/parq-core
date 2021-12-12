@@ -98,30 +98,24 @@ export async function payTicket (ticketId, options = {}) {
     })
   }
 
+  const { endAt } = options
   const flatRate = computeFlatRate(vehicle.lastVisitedAt)
-
-  const amountToPay = computeAmountToPay(ticket, flatRate, strategies, options.endAt)
+  const amountToPay = computeAmountToPay(ticket, flatRate, strategies, endAt)
 
   return sql.begin(async sql => {
     const paidTicket = await stores.tickets.pay(ticket.id, amountToPay, {
-      txn: sql
+      txn: sql,
+      endAt
     })
 
     await stores.slots.vacant(ticket.slotId, {
       txn: sql
     })
 
-    // the last_visit_at column will only be updated
-    //  when the flat rate is greater than 0,
-    //  so that the vehicle concerned won't just come and go
-    //  and only end up paying the flat rate
-    //
-    //  come and go = (within a duration of time, e.g. 1 hour)
-    if (flatRate) {
-      await stores.vehicles.updateLastVisit(ticket.vehicleId, {
-        txn: sql
-      })
-    }
+    await stores.vehicles.updateLastVisit(ticket.vehicleId, {
+      txn: sql,
+      endAt
+    })
 
     return paidTicket
   })
@@ -141,7 +135,16 @@ function computeFlatRate (lastVisitedAt, gracePeriodInHours = 1, defaultFlatRate
     return defaultFlatRate
   }
 
-  const timeSpentAway = diffInHours(new Date(), lastVisitedAt, Math.round)
+  let now = new Date()
+
+  // we only allow this behavior during development
+  //  as we are able to set a custom time to end
+  if (config.isDev && now < lastVisitedAt) {
+    now = lastVisitedAt
+    lastVisitedAt = new Date()
+  }
+
+  const timeSpentAway = diffInHours(now, lastVisitedAt, Math.round)
 
   return timeSpentAway <= gracePeriodInHours
     ? 0
