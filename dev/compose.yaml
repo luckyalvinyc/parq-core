@@ -3,7 +3,7 @@ services:
     image: postgres:13.4-alpine
     container_name: postgres_dev_parq_core
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5444}:5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
