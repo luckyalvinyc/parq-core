@@ -23,6 +23,7 @@
 <script>
   import AddSlotForm from './forms/AddSlot.svelte'
   import IssueTicketForm from './forms/IssueTicket.svelte'
+  import Slots from '../../components/Slots.svelte'
 
   /**
    * @param {number} entryPointId
@@ -41,14 +42,6 @@
     }))
   }
 
-  async function pay (ticketId) {
-    if (!ticketId)  return
-
-    const { ticket } = await api.tickets.update(ticketId)
-
-    slots.markAsVacant(ticket.slotId)
-  }
-
   function bind (Component, props) {
     return function (options) {
       return new Component({
@@ -64,12 +57,7 @@
 
 <button on:click={openModalForAddingSlots}>Add Slot</button>
 
-{#each Object.entries($slots) as [slotId, slot] (slotId)}
-  <div
-    on:click={() => pay(slot.ticket?.id)}
-    class="slot"
-    class:available={slot.available}>{slot.id}</div>
-{/each}
+<Slots slots={$slots} />
 
 {#each entryPoints as entryPoint (entryPoint.id)}
   <div>
@@ -80,13 +68,4 @@
 {/each}
 
 <style>
-  .slot {
-    background-color: hotpink;
-    padding: 1rem 1.5rem;
-    margin-bottom: 1rem;
-  }
-
-  .slot.available {
-    background-color: papayawhip;
-  }
 </style>
