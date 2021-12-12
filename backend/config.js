@@ -66,7 +66,7 @@ export default {
 
 function postgresDefaults (config) {
   return {
-    port: config.port || 5432,
+    port: config.port || 5444,
     database: config.database || 'parq_core',
     username: config.username || 'postgres',
     password: config.password || 'postgres'
