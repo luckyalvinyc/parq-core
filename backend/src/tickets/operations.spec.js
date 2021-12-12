@@ -175,6 +175,7 @@ describe('@payTicket', () => {
   const ticketId = 1
 
   const initialHours = 3
+  const gracePeriodInHours = 1
   const flatRate = 40
   const fullDayRate = 5000
   const smallRatePerHour = 20
@@ -212,9 +213,10 @@ describe('@payTicket', () => {
       }
     }))
 
-    jest.unstable_mockModule('../../config.js', () => ({
+    jest.unstable_mockModule('#config', () => ({
       default: {
         initialHours,
+        gracePeriod: gracePeriodInHours,
 
         rates: {
           flat: flatRate,

@@ -18,6 +18,7 @@ const {
   SERVER_PORT = '3000',
 
   INITIAL_HOURS = '3',
+  GRACE_PERIOD_IN_HOURS = '1',
 
   FLAT_RATE = '40',
   FULL_DAY_RATE = '5000',
@@ -41,7 +42,8 @@ export default {
     port: parseInt(SERVER_PORT, 10)
   },
 
-  initialHours: parseInt(INITIAL_HOURS),
+  initialHours: parseInt(INITIAL_HOURS, 10),
+  gracePeriod: parseInt(GRACE_PERIOD_IN_HOURS, 10),
 
   rates: {
     flat: Number(FLAT_RATE),
