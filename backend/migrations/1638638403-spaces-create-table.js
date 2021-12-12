@@ -6,8 +6,8 @@ export async function up (sql) {
       id           int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
       name         varchar NOT NULL,
       entry_points int NOT NULL,
-      created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-      updated_at   TIMESTAMP DEFAULT NULL
+      created_at   timestamptz DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      updated_at   timestamptz DEFAULT NULL
     );
   `
 }

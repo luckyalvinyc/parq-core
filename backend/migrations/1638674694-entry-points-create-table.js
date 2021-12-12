@@ -6,8 +6,8 @@ export async function up (sql) {
       id         int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
       space_id   int REFERENCES spaces (id) NOT NULL,
       label      varchar NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-      updated_at TIMESTAMP DEFAULT NULL
+      created_at timestamptz DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      updated_at timestamptz DEFAULT NULL
     )
   `
 }

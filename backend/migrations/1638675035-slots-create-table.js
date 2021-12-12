@@ -8,8 +8,8 @@ export async function up (sql) {
       distance   jsonb NOT NULL,
       type       smallint NOT NULL,
       available  boolean DEFAULT true NOT NULL,
-      created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-      updated_at timestamp DEFAULT NULL
+      created_at timestamptz DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      updated_at timestamptz DEFAULT NULL
     )
   `
 }

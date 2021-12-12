@@ -5,8 +5,8 @@ export async function up (sql) {
     CREATE TABLE IF NOT EXISTS ${sql(TABLE_NAME)} (
       id         varchar PRIMARY KEY,
       type       smallint NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-      updated_at TIMESTAMP DEFAULT NULL
+      created_at timestamptz DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      updated_at timestamptz DEFAULT NULL
     )
   `
 }

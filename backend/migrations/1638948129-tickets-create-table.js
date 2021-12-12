@@ -9,8 +9,8 @@ export async function up (sql) {
       rate       numeric NOT NULL,
       paid       boolean DEFAULT false NOT NULL,
       amount     numeric DEFAULT 0,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-      updated_at TIMESTAMP DEFAULT NULL
+      created_at timestamptz DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      updated_at timestamptz DEFAULT NULL
     );
   `
 }
