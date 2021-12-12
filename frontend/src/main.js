@@ -1,6 +1,6 @@
 import '@unocss/reset/tailwind.css'
 import 'uno.css'
-import './global.css'
+import './styles/global.css'
 
 import App from './App.svelte'
 

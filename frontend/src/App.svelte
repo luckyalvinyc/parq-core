@@ -1,12 +1,9 @@
 <script>
-  import { onMount, onDestroy } from 'svelte'
+  import { onDestroy } from 'svelte'
   import navaid from 'navaid'
 
-  import { api } from './api'
-  import Slot from './Slot.svelte'
-
-  let entryPoints = []
-  let slots = []
+  import { modal } from './stores'
+  import Modal from './components/Modal.svelte'
 
   // ~~~~~~~~~~
   // Routes
@@ -15,36 +12,30 @@
   let Page
 
   const router = navaid('/', on404)
+    .on('/', () => load(import('./pages/spaces/List.svelte')))
+    .on('/:spaceId', params => load(import('./pages/spaces/Get.svelte'), params))
     .listen()
 
   function on404 () {
 
   }
 
-  function load (thunk) {
-    thunk.then(mod => {
-      Page = mod.default
-    })
-  }
+  async function load (promise, params) {
+    const mod = await promise
 
-  onMount(async () => {
-    const spaces = await api.spaces.list()
-    console.log(spaces)
-  })
+    if (mod.preload) {
+      await mod.preload(params)
+    }
+
+    Page = mod.default
+  }
 
   onDestroy(router.unlisten)
 </script>
 
-<main class="h-full">
+<main>
+  <Modal component={$modal}/>
   <svelte:component this={Page} />
-
-  {#each slots as slot (slot.id)}
-    <div>
-      <Slot {slot} />
-    </div>
-  {:else}
-    <p>loading</p>
-  {/each}
 </main>
 
 <style>

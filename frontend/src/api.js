@@ -1,19 +1,35 @@
-const req = request()
+const req = request(baseURL())
 
 export const api = {
-  spaces: spaces()
+  spaces: spaces(),
+  tickets: tickets()
 }
 
 // ~~~~~~~~~~
 // /spaces
 // ~~~~~~~~~~
 
-function spaces (prefix = 'spaces') {
-  prefix = baseURL(prefix)
-
+function spaces (prefix = '/spaces') {
   return {
     /**
-     * GET /spaces/
+     * POST /spaces
+     *
+     * @param {object} space
+     * @param {string} space.name
+     * @param {number} space.entryPoints
+     */
+
+    async create (space) {
+      const response = await req.post(prefix, {
+        name: space.name,
+        numberOfEntryPoints: space.entryPoints
+      })
+
+      return response.data
+    },
+
+    /**
+     * GET /spaces
      *
      * @returns {Promise<object[]>}
      */
@@ -35,19 +51,79 @@ function spaces (prefix = 'spaces') {
       const response = await req.get(`${prefix}/${spaceId}`)
 
       return response.data
+    },
+
+    /**
+     * POST /spaces/:spaceId
+     *
+     * @param {number} spaceId
+     * @param {object[]} slots
+     * @param {string} slots[].type
+     * @param {Record<string, number>} slots[].distance
+     * @returns {Promise<object>}
+     */
+
+    async update (spaceId, slots) {
+      const response = await req.post(`${prefix}/${spaceId}`, {
+        slots
+      })
+
+      return response.data
+    }
+  }
+}
+
+// ~~~~~~~~~~
+// /tickets
+// ~~~~~~~~~~
+
+function tickets (prefix = '/tickets') {
+  return {
+    /**
+     * POST /tickets
+     *
+     * @param {number} entryPointId
+     * @param {object} vehicle
+     * @param {string} vehicle.plateNumber
+     * @param {string} vehicle.type
+     */
+
+    async create (entryPointId, vehicle) {
+      const response = await req.post(prefix, {
+        entryPointId,
+        vehicle: {
+          plateNumber: vehicle.plateNumber.trim(),
+          type: vehicle.type
+        }
+      })
+
+      return response.data
+    },
+
+    /**
+     * POST /tickets/:ticketId
+     *
+     * @param {number} ticketId
+     */
+
+    async update (ticketId, options) {
+      const response = await req.post(`${prefix}/${ticketId}`, {
+        numberOfHoursToAdvance: undefined
+      })
+
+      return response.data
     }
   }
 }
 
 /**
  *
- * @param {string} prefix
  * @param {string} version
  * @returns {string}
  */
 
-function baseURL (prefix, version = 'v1') {
-  return `/api/${version}/${prefix}`
+function baseURL (version = 'v1') {
+  return `/api/${version}`
 }
 
 /**
