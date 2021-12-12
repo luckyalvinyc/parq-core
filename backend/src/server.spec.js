@@ -5,7 +5,7 @@ import * as server from './server.js'
 describe('@start', () => {
   it('should start the server', async () => {
     const close = await server.start({
-      port: 3000
+      port: 0
     })
 
     expect(close).toBeInstanceOf(Function)
