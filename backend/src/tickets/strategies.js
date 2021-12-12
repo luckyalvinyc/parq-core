@@ -1,4 +1,4 @@
-import config from '../../config.js'
+import config from '#config'
 import { ONE_DAY_IN_HR } from './constants.js'
 
 /**

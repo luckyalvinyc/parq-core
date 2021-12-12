@@ -391,8 +391,9 @@ describe('@toSlot', () => {
       available: true,
       ticket: {
         id: 1,
-        vehicle_id: 'a',
         rate: 10,
+        vehicle_id: 'a',
+        vehicle_type: 0,
         created_at: startedAt
       }
     })
@@ -403,9 +404,12 @@ describe('@toSlot', () => {
       available: true,
       ticket: {
         id: 1,
-        vehicleId: 'a',
         rate: 10,
-        startedAt: startedAt
+        startedAt,
+        vehicle: {
+          id: 'a',
+          type: 'small'
+        }
       }
     })
   })

@@ -103,11 +103,14 @@ export async function listBySpaceId (spaceId) {
         json_build_object(
           'id', tickets.id,
           'vehicle_id', tickets.vehicle_id,
+          'vehicle_type', vehicles.type,
           'rate', tickets.rate,
           'created_at', tickets.created_at
         ) AS ticket
       FROM
         tickets
+      INNER JOIN vehicles ON
+        tickets.vehicle_id = vehicles.id
       WHERE
         tickets.slot_id = slots.id AND
         tickets.paid = false
@@ -257,6 +260,7 @@ export function build (slot) {
  * @param {object} [row.ticket]
  * @param {number} row.ticket.id
  * @param {number} row.ticket.vehicle_id
+ * @param {number} row.ticket.vehicle_type
  * @param {number} row.ticket.rate
  * @param {Date} row.ticket.created_at
  * @private
@@ -276,9 +280,12 @@ export function toSlot (row) {
   if (row.ticket) {
     slot.ticket = {
       id: row.ticket.id,
-      vehicleId: row.ticket.vehicle_id,
       rate: row.ticket.rate,
-      startedAt: row.ticket.created_at
+      startedAt: row.ticket.created_at,
+      vehicle: {
+        id: row.ticket.vehicle_id,
+        type: types.from(row.ticket.vehicle_type)
+      }
     }
   }
 

@@ -3,9 +3,9 @@ import send from '@polka/send'
 export default helpers
 
 /**
- * Adds response helper methods:
- *  - `send(data)`
- *  - `status(code)`
+ * Adds the following methods to the response object:
+ *  - `res.send(data)`
+ *  - `res.status(code)`
  */
 
 function helpers (req, res, next) {
