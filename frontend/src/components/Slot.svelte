@@ -1,39 +1,46 @@
 <script>
-  import { api } from '../api'
-  import { slots } from '../stores'
+  import { createEventDispatcher } from 'svelte'
 
   export let slot
 
-  async function pay (ticket) {
-    if (!ticket) return
+  const dispatch = createEventDispatcher()
 
-    const data = await api.tickets.update(ticket.id)
-
-    slots.markAsVacant(data.ticket.slotId)
+  function onClick () {
+    dispatch('click', {
+      slot
+    })
   }
 </script>
 
-  <div
-    on:click={() => pay(slot.ticket)}
-    class="slot"
-    class:available={slot.available}>
-    <p>{slot.id}</p>
-
-    {#if slot.ticket}
-      <p>{slot.ticket.vehicleId}</p>
-    {/if}
-  </div>
+<div
+  on:click={onClick}
+  class="slot bg-white {slot.type} cursor-pointer"
+  class:occupied={!slot.available}
+>
+  <span>{slot.id}</span>
+</div>
 
 <style>
-  .slot {
-    background-color: hotpink;
-    padding: 1rem 1.5rem;
-    margin-bottom: 1rem;
-    color: #fff;
+  .slot:hover {
+    background-color: #e5e1d6;
+  }
+  .slot.small {
+    border: 2px solid #fdc04e;
   }
 
-  .slot.available {
-    color: #000;
-    background-color: papayawhip;
+  .slot.medium {
+    border: 2px solid #b4dcea;
+  }
+
+  .slot.large {
+    border: 2px solid #ca3422;
+  }
+
+  .occupied {
+    color: #fdc04e;
+    background-color: #90a68e;
+  }
+  .occupied:hover {
+    background-color: #879f84;
   }
 </style>

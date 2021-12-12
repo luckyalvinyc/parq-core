@@ -9,6 +9,7 @@
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
+    "dayjs": "^1.10.7",
     "navaid": "^1.2.0"
   },
   "devDependencies": {

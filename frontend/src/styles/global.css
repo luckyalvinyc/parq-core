@@ -7,6 +7,11 @@ html, body, #app {
   width: 100%;
 }
 
-a {
-  cursor: pointer;
+#app {
+  border: 1.5rem solid papayawhip;
+}
+
+input, select {
+  width: 100%;
+  height: 2rem;
 }

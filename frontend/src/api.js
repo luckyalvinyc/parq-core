@@ -104,12 +104,17 @@ function tickets (prefix = '/tickets') {
      * POST /tickets/:ticketId
      *
      * @param {number} ticketId
+     * @param {number} [numberOfHoursToAdvance]
      */
 
-    async update (ticketId, options) {
-      const response = await req.post(`${prefix}/${ticketId}`, {
-        numberOfHoursToAdvance: undefined
-      })
+    async update (ticketId, numberOfHoursToAdvance) {
+      const body = {}
+
+      if (numberOfHoursToAdvance) {
+        body.numberOfHoursToAdvance = numberOfHoursToAdvance
+      }
+
+      const response = await req.post(`${prefix}/${ticketId}`, body)
 
       return response.data
     }

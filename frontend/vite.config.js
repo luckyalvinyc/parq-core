@@ -12,15 +12,27 @@ export default defineConfig({
       presets: [presetUno()],
       theme: {
         colors: {
+          white: '#f2f0eb ',
+          green: {
+            light: '#90a68e',
+            DEFAULT: '#879f84',
+            dark: '#6d8769'
+          },
           yellow: {
             light: '#fed280',
             DEFAULT: '#fdc04e'
           },
+          magenta: '#6667AB',
           gray: {
+            light: '#cccfcf',
             DEFAULT: '#babebf',
             dark: '#4b5051'
           }
         }
+      },
+      shortcuts: {
+        adder: 'border-2px border-dashed color-green bg-white text-1.7rem',
+        slot: 'w-85px h-45px rounded-10px m-r-10px m-b-10px bg-magenta flex justify-center items-center'
       }
     }),
     svelte()

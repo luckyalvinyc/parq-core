@@ -33,7 +33,7 @@
   onDestroy(router.unlisten)
 </script>
 
-<main>
+<main class="flex flex-col h-100%">
   <Modal component={$modal}/>
   <svelte:component this={Page} />
 </main>

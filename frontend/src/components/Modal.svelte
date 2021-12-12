@@ -1,3 +1,17 @@
+<script context="module">
+  export function bind (Component, props) {
+    return function (options) {
+      return new Component({
+        ...options,
+        props: {
+          ...props,
+          ...options.props
+        }
+      })
+    }
+  }
+</script>
+
 <script>
   import { onMount } from 'svelte'
 
@@ -18,11 +32,15 @@
   }
 
   function onKeydown (e) {
-    if (!Content) {
+    if (e.key !== 'Escape') {
       return
     }
 
-    if (e.key !== 'Escape') {
+    close()
+  }
+
+  function close () {
+    if (!Content) {
       return
     }
 
@@ -34,7 +52,10 @@
 <svelte:window on:keydown={onKeydown} />
 
 {#if Content}
-  <section class="c-modal">
+  <section
+    on:click|self={close}
+    class="c-modal"
+  >
     <div class="modal__content">
       <svelte:component this={Content} />
     </div>
@@ -45,6 +66,8 @@
   .c-modal {
     display: flex;
     position: fixed;
+    top: 0;
+    left: 0;
     z-index: 100;
     background-color:rgba(0, 0, 0, 0.5);
     width: 100%;
@@ -55,7 +78,7 @@
   }
 
   .modal__content {
-    min-width: 400px;
+    max-width: 400px;
     background-color: white;
     border-radius: 10px;
     padding: 1.5rem;
