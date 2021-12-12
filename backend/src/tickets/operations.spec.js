@@ -294,7 +294,7 @@ describe('@payTicket', () => {
   // this assumes that vehicle has paid the flat rate before leaving
   it('should not pay any amount if vehicle comes back within the grace period', async () => {
     vehicle.lastVisitedAt = new Date()
-    stores.vehicles.findById(vehicle)
+    stores.vehicles.findById.mockResolvedValue(vehicle)
 
     const date = new Date()
     date.setMinutes(30)
@@ -305,11 +305,13 @@ describe('@payTicket', () => {
 
     expect(stores.tickets.pay).toHaveBeenCalledTimes(1)
     expect(stores.tickets.pay.mock.calls[0][1]).toBe(0)
+
+    expect(stores.vehicles.updateLastVisit).toHaveBeenCalledTimes(0)
   })
 
   it('should pay the flat rate if the last visited date exceeds the grace period', async () => {
     vehicle.lastVisitedAt = new Date()
-    stores.vehicles.findById(vehicle)
+    stores.vehicles.findById.mockResolvedValue(vehicle)
 
     const date = new Date()
     date.setHours(date.getHours() + 2)
@@ -348,5 +350,26 @@ describe('@payTicket', () => {
     await expect(payTicket(ticketId)).rejects.toThrow({
       message: 'vehicle'
     })
+  })
+})
+
+describe('@computeFlatRate', () => {
+  it('should return the default flat rate if the `lastVisitedAt` is in the future and in dev mode', async () => {
+    jest.unstable_mockModule('#config', () => ({
+      default: {
+        isDev: true
+      }
+    }))
+
+    const { computeFlatRate } = await import('./operations.js')
+
+    const dateInFuture = new Date()
+    dateInFuture.setHours(dateInFuture.getHours() + 5)
+
+    const defaulFlatRate = 20
+
+    const flatRate = computeFlatRate(dateInFuture, defaulFlatRate)
+
+    expect(flatRate).toBe(defaulFlatRate)
   })
 })

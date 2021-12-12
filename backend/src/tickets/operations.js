@@ -113,10 +113,22 @@ export async function payTicket (ticketId, options = {}) {
       txn: sql
     })
 
-    await stores.vehicles.updateLastVisit(ticket.vehicleId, {
-      txn: sql,
-      endAt
-    })
+    // the updated_at column will only be updated
+    //  when the flat rate is greater than 0,
+    //  so that the vehicle concerned won't just come and go
+    //  and only end up paying the flat rate
+    //
+    //  come and go = (within a duration of time, e.g. 1 hour)
+    //
+    // the `endAt` check is only applicable development,
+    //  so that when setting a custom time to end the correct
+    //  `flatRate` will be applied to the target vehicle
+    if (flatRate || endAt) {
+      await stores.vehicles.updateLastVisit(ticket.vehicleId, {
+        txn: sql,
+        endAt
+      })
+    }
 
     return paidTicket
   })
@@ -126,28 +138,31 @@ export async function payTicket (ticketId, options = {}) {
  * Computes the flat rate depending when the vehicle last visited
  *
  * @param {Date} [lastVisitedAt]
- * @param {number} [gracePeriodInHours]
  * @param {number} [defaultFlatRate]
+ * @param {number} [gracePeriod]
  * @returns {number}
  */
 
-function computeFlatRate (lastVisitedAt, gracePeriodInHours = 1, defaultFlatRate = config.rates.flat) {
+export function computeFlatRate (
+  lastVisitedAt,
+  defaultFlatRate = config.rates.flat,
+  gracePeriod = config.gracePeriod
+) {
   if (!lastVisitedAt) {
     return defaultFlatRate
   }
 
-  let now = new Date()
+  const now = new Date()
 
   // we only allow this behavior during development
   //  as we are able to set a custom time to end
   if (config.isDev && now < lastVisitedAt) {
-    now = lastVisitedAt
-    lastVisitedAt = new Date()
+    return defaultFlatRate
   }
 
   const timeSpentAway = diffInHours(now, lastVisitedAt, Math.round)
 
-  return timeSpentAway <= gracePeriodInHours
+  return timeSpentAway <= gracePeriod
     ? 0
     : defaultFlatRate
 }
