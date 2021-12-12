@@ -23,9 +23,11 @@ describe('@issueTicket', () => {
   const ticket = {
     id: 1,
     slotId: 1,
+    vehicleId: 'a',
     rate: 20,
     startedAt: new Date()
   }
+
   const vehicle = {
     plateNumber: 'a',
     type: 'small'
