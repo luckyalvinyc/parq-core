@@ -11,7 +11,9 @@
     "pretest": "npm run compose:up",
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest",
     "db:create": "node scripts/cli.js create",
-    "db:migrate": "ley up"
+    "db:migrate": "ley up",
+    "db:revert": "ley down --all",
+    "db:refresh": "npm run db:revert && npm run db:migrate"
   },
   "author": "Lucky Alvin Y. Casipe <luckyalvinyc@gmail.com>",
   "license": "UNLICENSED",
