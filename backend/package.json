@@ -20,6 +20,7 @@
   "private": true,
   "imports": {
     "#config": "./config.js",
+    "#server": "./src/server.js",
     "#stores": "./src/stores/index.js",
     "#tests/*.js": "./tests/*.js"
   },
@@ -37,6 +38,7 @@
   },
   "devDependencies": {
     "cross-env": "^7.0.3",
+    "httpie": "^1.1.2",
     "jest": "^27.4.3",
     "jest-environment-node": "^27.4.2",
     "ley": "^0.7.1",

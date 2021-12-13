@@ -5,7 +5,9 @@
     "strictNullChecks": true,
     "paths": {
       "#config": ["./config.js"],
-      "#stores": ["./src/stores/index.js"]
+      "#server": ["./src/server.js"],
+      "#stores": ["./src/stores/index.js"],
+      "#tests/*": ["./tests/*"]
     }
   },
   "exclude": ["node_modules"]

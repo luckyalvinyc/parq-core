@@ -1,11 +1,11 @@
 <script>
-  import { api } from '../../../api'
-  import { modal, slots } from '../../../stores'
+  import { api } from '../../api'
+  import { modal, slots } from '../../stores'
 
-  import Input from '../../../components/Input.svelte'
-  import Button from '../../../components/Button.svelte'
-  import FormField from '../../../components/FormField.svelte'
-  import SelectTypes from '../../../components/SelectTypes.svelte'
+  import Input from '../../components/Input.svelte'
+  import Button from '../../components/Button.svelte'
+  import FormField from '../../components/FormField.svelte'
+  import SelectTypes from '../../components/SelectTypes.svelte'
 
   // props
   export let spaceId
@@ -70,7 +70,7 @@
             step="0.01"
             id="entry-{index}-{entryPoint.id}"
             bind:value={slot.distance[entryPoint.id]} />
-          </FormField>
+        </FormField>
       {/each}
     </div>
   {/each}

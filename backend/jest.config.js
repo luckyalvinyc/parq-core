@@ -1,9 +1,10 @@
 export default {
   verbose: true,
-  resetMocks: true,
   resetModules: true,
+  restoreMocks: true,
   moduleNameMapper: {
     '^#config$': '<rootDir>/config.js',
+    '^#server': '<rootDir>/src/server.js',
     '^#stores$': '<rootDir>/src/stores/index.js',
     '^#tests/(.*\\.js)$': '<rootDir>/tests/$1'
   },

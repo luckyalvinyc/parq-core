@@ -14,6 +14,7 @@
 
 <script>
   import { onMount } from 'svelte'
+  import { error } from '../stores'
 
   // props
   export let component
@@ -56,7 +57,10 @@
     on:click|self={close}
     class="c-modal"
   >
-    <div class="modal__content">
+    <div
+      class="modal__content"
+      class:shake={$error}
+    >
       <svelte:component this={Content} />
     </div>
   </section>
@@ -79,8 +83,35 @@
 
   .modal__content {
     max-width: 400px;
+    width: 100%;
     background-color: white;
     border-radius: 10px;
     padding: 1.5rem;
+  }
+
+  /* https://css-tricks.com/snippets/css/shake-css-keyframe-animation */
+  .modal__content.shake {
+    animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+  }
+
+  @keyframes shake {
+    10%, 90% {
+      transform: translate3d(-1px, 0, 0);
+    }
+
+    20%, 80% {
+      transform: translate3d(2px, 0, 0);
+    }
+
+    30%, 50%, 70% {
+      transform: translate3d(-4px, 0, 0);
+    }
+
+    40%, 60% {
+      transform: translate3d(4px, 0, 0);
+    }
   }
 </style>

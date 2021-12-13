@@ -1,10 +1,10 @@
 <script>
-  import { api } from '../../../api'
-  import { modal, spaces } from '../../../stores'
+  import { api } from '../../api'
+  import { modal, spaces } from '../../stores'
 
-  import Input from '../../../components/Input.svelte'
-  import Button from '../../../components/Button.svelte'
-  import FormField from '../../../components/FormField.svelte'
+  import Input from '../../components/Input.svelte'
+  import Button from '../../components/Button.svelte'
+  import FormField from '../../components/FormField.svelte'
 
   const space = {
     name: '',
@@ -28,28 +28,22 @@
     label="Name"
     required
   >
-    <Input id="name" bind:value={space.name} required />
+    <Input
+      id="name"
+      bind:value={space.name}
+      required />
   </FormField>
   <FormField
     id="entry_points"
     label="# of entry points"
     required
   >
-    <input
-      id="entry_points"
+    <Input
       type="number"
+      id="entry_points"
       bind:value={space.entryPoints}
       min="3"
-      required>
+      required />
   </FormField>
   <Button type="sumit" class="m-t-1rem">create</Button>
 </form>
-
-<style>
-  input {
-    width: 100%;
-    padding: 0 0.4rem;
-    height: 1.75rem;
-    background-color: #e1e1e1;
-  }
-</style>

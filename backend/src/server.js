@@ -18,9 +18,8 @@ import helpers from './middlewares/helpers.js'
 
 export async function start (config) {
   const server = Polka()
-  server.onError = onError
 
-  applyBaseMiddlewares(server)
+  withErrorHandler(server)
 
   await setupRoutes(server, onError)
 
@@ -40,6 +39,19 @@ export async function start (config) {
       })
     })
   }
+}
+
+/**
+ * Adds an error handler from the provided `server`
+ *
+ * @param {ReturnType<Polka>} server
+ * @param {function} handler
+ */
+
+export function withErrorHandler (server, handler = onError) {
+  applyBaseMiddlewares(server)
+
+  server.onError = onError
 }
 
 /**
@@ -70,6 +82,7 @@ export async function setupRoutes (server, onError, files = pathToEndpoints()) {
     const { default: route } = await import(file)
     const [, version] = basename(file, '.js').split('.')
 
+    route.setup()
     route.onError = onError
     server.use(`/api/${version}/${route.prefix}`, route)
   }
@@ -87,7 +100,7 @@ function pathToEndpoints () {
 
   const files = new fdir()
     .withFullPaths()
-    .glob('./**/endpoints.*.js')
+    .glob('./**/endpoints.!(*.spec).js')
     .crawl(cwd)
     .sync()
 

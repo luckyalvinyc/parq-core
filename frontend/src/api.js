@@ -1,3 +1,5 @@
+import { error } from './stores'
+
 const req = request(baseURL())
 
 export const api = {
@@ -175,9 +177,7 @@ function request (baseURL = '') {
     async post (path, body, headers) {
       const opts = {
         method: 'POST',
-        headers: Object.assign({
-          'Content-Type': 'application/json; charset=utf-8'
-        }, headers)
+        headers: Object.assign({ 'Content-Type': 'application/json; charset=utf-8' }, headers)
       }
 
       if (body) {
@@ -195,6 +195,12 @@ function request (baseURL = '') {
       }
 
       if (response.status >= 400 || response.status >= 500) {
+        error.set(data.error)
+
+        setTimeout(() => {
+          error.set(null)
+        }, 1000)
+
         throw new Error(data.error.message)
       }
 

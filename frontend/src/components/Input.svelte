@@ -22,7 +22,7 @@
 
   onMount(() => {
     if ($$restProps.type === 'number') {
-      value = Number($$restProps.min) || 1
+      value = Number($$restProps.min) ?? 1
     }
   })
 </script>

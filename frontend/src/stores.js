@@ -4,9 +4,12 @@ export const modal = writable(null)
 
 export const spaces = writable([])
 export const slots = createSlots()
+export const entryPoints = writable([])
 
 // the selected slot that will also show the ticket info
 export const slot = writable(null)
+
+export const error = writable(null)
 
 function createSlots () {
   const { subscribe, set, update } = writable({})

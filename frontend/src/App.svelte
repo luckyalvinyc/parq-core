@@ -12,8 +12,8 @@
   let Page
 
   const router = navaid('/', on404)
-    .on('/', () => load(import('./pages/spaces/List.svelte')))
-    .on('/:spaceId', params => load(import('./pages/spaces/Get.svelte'), params))
+    .on('/', () => load(import('./pages/ListSpaces.svelte')))
+    .on('/:spaceId', params => load(import('./pages/ListSlots.svelte'), params))
     .listen()
 
   function on404 () {

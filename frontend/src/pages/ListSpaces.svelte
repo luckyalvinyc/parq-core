@@ -1,6 +1,6 @@
 <script context="module">
-  import { api } from '../../api'
-  import { spaces } from '../../stores'
+  import { api } from '../api'
+  import { spaces } from '../stores'
 
   export async function preload () {
     const data = await api.spaces.list()
@@ -10,7 +10,7 @@
 </script>
 
 <script>
-  import { modal } from '../../stores'
+  import { modal } from '../stores'
   import SpaceCreateForm from './forms/SpaceCreate.svelte'
 
   function openModalToCreateSpace () {
