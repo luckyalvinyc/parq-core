@@ -13,11 +13,11 @@
     "navaid": "^1.2.0"
   },
   "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "^1.0.0-next.11",
-    "@unocss/preset-uno": "^0.15.6",
-    "@unocss/reset": "^0.15.6",
-    "svelte": "^3.37.0",
-    "unocss": "^0.15.6",
-    "vite": "^2.6.4"
+    "@sveltejs/vite-plugin-svelte": "^1.0.0-next.36",
+    "@unocss/preset-uno": "^0.22.7",
+    "@unocss/reset": "^0.22.7",
+    "svelte": "^3.46.3",
+    "unocss": "^0.22.7",
+    "vite": "^2.7.13"
   }
 }
