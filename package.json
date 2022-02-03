@@ -10,7 +10,7 @@
   "license": "UNLICENSED",
   "private": true,
   "scripts": {
-    "setup": "./setup",
+    "setup": "./bin/setup",
     "dev": "run-p -l dev:*",
     "dev:backend": "npm run dev -w backend",
     "dev:frontend": "npm run dev -w frontend",
