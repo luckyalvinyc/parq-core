@@ -9,7 +9,7 @@ The command below will do the following
 - Create `.env` file
 
 ```sh
- $ npm run setup
+$ npm run setup
 ```
 
 After the setup is done, you can run the app by doing so
