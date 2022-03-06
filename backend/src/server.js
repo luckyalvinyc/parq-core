@@ -1,5 +1,5 @@
-import { fileURLToPath } from 'url'
 import { basename, dirname } from 'path'
+import { fileURLToPath, pathToFileURL } from 'url'
 
 import Polka from 'polka'
 import * as parse from '@polka/parse'
@@ -74,11 +74,12 @@ export function applyBaseMiddlewares (server) {
  *
  * @param {import('polka').Polka} server
  * @param {function} onError
- * @param {string[]} [files]
+ * @param {string[]} [paths]
  */
 
-export async function setupRoutes (server, onError, files = pathToEndpoints()) {
-  for (const file of files) {
+export async function setupRoutes (server, onError, paths = pathToEndpoints()) {
+  for (const path of paths) {
+    const file = pathToFileURL(path).toString()
     const { default: route } = await import(file)
     const [, version] = basename(file, '.js').split('.')
 
@@ -89,7 +90,7 @@ export async function setupRoutes (server, onError, files = pathToEndpoints()) {
 }
 
 /**
- * Returns the path to the endponts `endpoints.{version}.js`
+ * Returns the paths to the endpoints `endpoints.{version}.js`
  *
  * @returns {string[]}
  */
@@ -98,13 +99,13 @@ function pathToEndpoints () {
   const pathToFile = fileURLToPath(import.meta.url)
   const cwd = dirname(pathToFile)
 
-  const files = new fdir()
+  const paths = new fdir()
     .withFullPaths()
     .glob('./**/endpoints.!(*.spec).js')
     .crawl(cwd)
     .sync()
 
-  return files
+  return paths
 }
 
 /**
